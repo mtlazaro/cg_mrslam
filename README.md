@@ -12,7 +12,7 @@ It is possible to use it also for single-robot SLAM.
 
 Requirements:
 -------------
-- This code uses the g2o framework for graph optimization
+- This code uses the g2o framework for graph optimization  
   Download the hierarchical branch:  
 
         $ git clone -b g2o_hierarchical https://github.com/RainerKuemmerle/g2o.git
@@ -31,7 +31,7 @@ Instructions
 There are four main programs for different kind of experiments.  
 
 - **real_mrslam:**
-  For running a multi-robot online real experiment. Robots must belong to the same network and their IP addresses configured from 192.168.0.(1..*nRobots*).  
+  For running a multi-robot online real experiment. Robots must belong to the same network and their IP addresses configured from 192.168.0.(1.. *nRobots*).  
   By default it reads /scan and /odom ROS topic although they are configurable.
   Each time a robot receives a message from the network, it publishes a message in /ping_msgs to be able to reproduce robot connectivity offline.
 
@@ -44,7 +44,7 @@ There are four main programs for different kind of experiments.
 - **srslam:**
   For running a single-robot experiment.
 
-All programs must be run adding the robot namespace "robot_x", where x is the robot identifier (0..*nRobots*-1).
+All programs must be run adding the robot namespace "robot_x", where x is the robot identifier (0.. *nRobots* -1).
 The default parameters work well in general, anyway for specific program options type:
 
     $ rosrun cg_mrslam mainProgram --help
