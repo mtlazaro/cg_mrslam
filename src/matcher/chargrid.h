@@ -156,7 +156,7 @@ struct CharGrid
   //! @param mresvec: the returned vector of matche results
   //! @param points: the input scan points in cartesian coordinates
   //! @param regions: the regions where to do the search (vector)
-  //! @param the parameters to be used for the matching
+  //! @param params: the parameters to be used for the matching
   void greedySearch(std::vector<MatcherResult>& mresvec, 
 		    const Vector2dVector& points, 
 		    const RegionVector& regions, 
