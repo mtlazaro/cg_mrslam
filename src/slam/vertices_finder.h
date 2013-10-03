@@ -37,7 +37,18 @@
 using namespace g2o;
 
 inline double distanceSE2(SE2 r1, SE2 r2){
-  return sqrt(pow(r1.translation().x()-r2.translation().x(), 2)+pow(r1.translation().y()-r2.translation().y(), 2));
+  Vector2d t = r1.translation()-r2.translation();
+  return t.norm();
+}
+
+inline double vertexDistance(OptimizableGraph::Vertex* v1, OptimizableGraph::Vertex* v2){
+  VertexSE2* v1se2 = dynamic_cast<VertexSE2*>(v1);
+  VertexSE2* v2se2 = dynamic_cast<VertexSE2*>(v2);
+
+  if (v1se2 && v2se2)
+    return distanceSE2(v1se2->estimate(), v2se2->estimate());
+  else
+    return std::numeric_limits<double>::max();
 }
 
 struct MyCostFunction : public HyperDijkstra::CostFunction {
@@ -100,7 +111,7 @@ class VerticesFinder{
   //Groups the vertices in 'mixedvset' in sets of connected vertices
   void findSetsOfVertices(OptimizableGraph::VertexSet &mixedvset, std::set<OptimizableGraph::VertexSet> &setOfVSet);
   //Returns the closest vertex in 'vset' from 'currentVertex'
-  VertexSE2* findClosestVertex(OptimizableGraph::VertexSet &vset, OptimizableGraph::Vertex* currentVertex);
+  OptimizableGraph::Vertex* findClosestVertex(OptimizableGraph::VertexSet &vset, OptimizableGraph::Vertex* currentVertex);
 
  protected:
   OptimizableGraph *_graph;

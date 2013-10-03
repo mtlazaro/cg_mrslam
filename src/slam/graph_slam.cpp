@@ -301,7 +301,7 @@ VertexEllipse* GraphSLAM::findEllipseData(OptimizableGraph::Vertex* v){
 void GraphSLAM::checkHaveLaser(OptimizableGraph::VertexSet& vset){
   OptimizableGraph::VertexSet tmpvset = vset;
   for (OptimizableGraph::VertexSet::iterator it = tmpvset.begin(); it != tmpvset.end(); it++){
-    VertexSE2 *vertex = (VertexSE2*) *it;
+    OptimizableGraph::Vertex *vertex = (OptimizableGraph::Vertex*) *it;
     if (!findLaserData(vertex))
       vset.erase(*it);
   }
@@ -356,9 +356,9 @@ void GraphSLAM::checkCovariance(OptimizableGraph::VertexSet& vset){
 void GraphSLAM::addNeighboringVertices(OptimizableGraph::VertexSet& vset, int gap){
   OptimizableGraph::VertexSet temp = vset;
   for (OptimizableGraph::VertexSet::iterator it = temp.begin(); it!=temp.end(); it++){
-    VertexSE2 *vertex = (VertexSE2*) *it;
+    OptimizableGraph::Vertex* vertex = (OptimizableGraph::Vertex*) *it;
     for (int i = 1; i <= gap; i++){
-      VertexSE2 *v = (VertexSE2 *) _graph->vertex(vertex->id()+i);
+      OptimizableGraph::Vertex *v = (OptimizableGraph::Vertex *) _graph->vertex(vertex->id()+i);
       if (v && v->id() != _lastVertex->id()){
 	OptimizableGraph::VertexSet::iterator itv = vset.find(v);
 	if (itv == vset.end())
@@ -369,7 +369,7 @@ void GraphSLAM::addNeighboringVertices(OptimizableGraph::VertexSet& vset, int ga
     }
 
     for (int i = 1; i <= gap; i++){
-      VertexSE2 *v = (VertexSE2 *) _graph->vertex(vertex->id()-i);
+      OptimizableGraph::Vertex* v = (OptimizableGraph::Vertex*) _graph->vertex(vertex->id()-i);
       if (v && v->id() != _lastVertex->id()){
 	OptimizableGraph::VertexSet::iterator itv = vset.find(v);
 	if (itv == vset.end())
@@ -404,7 +404,7 @@ void GraphSLAM::findConstraints(){
     
     OptimizableGraph::VertexSet myvset = *it;
     
-    VertexSE2 *closestV = _vf.findClosestVertex(myvset, _lastVertex); 
+    OptimizableGraph::Vertex* closestV = _vf.findClosestVertex(myvset, _lastVertex); 
     
     if (closestV->id() == _lastVertex->id() - 1) //Already have this edge
       continue;
@@ -572,7 +572,7 @@ void GraphSLAM::optimize(int nrunnings){
   //////////////////////////////////////
   //Update ellipse data
   //Covariance computation
-
+  /*
   CovarianceEstimator ce(_graph);
 
   OptimizableGraph::VertexSet vset;
@@ -587,7 +587,7 @@ void GraphSLAM::optimize(int nrunnings){
   ce.compute();
 
   ///////////////////////////////////
-  /*
+  
   for (OptimizableGraph::VertexIDMap::iterator it=_graph->vertices().begin(); it!=_graph->vertices().end(); ++it) {
     VertexSE2* v = dynamic_cast<VertexSE2*>(it->second);
     VertexEllipse* ellipse = findEllipseData(v);

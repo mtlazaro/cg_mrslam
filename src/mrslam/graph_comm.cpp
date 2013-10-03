@@ -130,8 +130,7 @@ void GraphComm::sendToThrd(){
   while(1){
     if (robotsInRange(robotsToSend)){
       if (_gslam->lastVertex()->id() != lastSentVertex){
-	VertexSE2 * lastV = _gslam->lastVertex();
-	lastSentVertex = lastV->id();
+	lastSentVertex = _gslam->lastVertex()->id();
 	
 	ComboMessage* cmsg = _gslam->constructComboMessage();
 	//Send to robots in range

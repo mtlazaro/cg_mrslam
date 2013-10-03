@@ -43,8 +43,6 @@ void VerticesFinder::findVerticesInDistance(OptimizableGraph::VertexSet& vset, O
 
 void VerticesFinder::findVerticesLoopClosing(OptimizableGraph::VertexSet& vset, OptimizableGraph::Vertex *currentVertex, double graphdist){
 
-  VertexSE2* _currentVertex=dynamic_cast<VertexSE2*>(currentVertex);
-
   HyperDijkstra hd(_graph);
   MyCostFunction mcf;
   hd.shortestPaths(currentVertex, &mcf, graphdist);
@@ -52,10 +50,10 @@ void VerticesFinder::findVerticesLoopClosing(OptimizableGraph::VertexSet& vset, 
   OptimizableGraph::VertexSet visited = hd.visited();
 
   for (OptimizableGraph::VertexIDMap::iterator it=_graph->vertices().begin(); it!=_graph->vertices().end(); ++it) {
-    VertexSE2* v= (VertexSE2*)(it->second);
+    OptimizableGraph::Vertex* v= (OptimizableGraph::Vertex*)(it->second);
 
     OptimizableGraph::VertexSet::iterator itvs = visited.find(v);
-    if (itvs == visited.end() && distanceSE2(_currentVertex->estimate(), v->estimate()) <= MAX_EUC_DIST_LC )
+    if (itvs == visited.end() && vertexDistance(currentVertex, v) <= MAX_EUC_DIST_LC )
        vset.insert(v);
   }
 }
@@ -100,19 +98,17 @@ void VerticesFinder::findSetsOfVertices(OptimizableGraph::VertexSet &mixedvset, 
   }
 }
 
-VertexSE2* VerticesFinder::findClosestVertex(OptimizableGraph::VertexSet &vset, OptimizableGraph::Vertex* currentVertex){
+OptimizableGraph::Vertex* VerticesFinder::findClosestVertex(OptimizableGraph::VertexSet &vset, OptimizableGraph::Vertex* currentVertex){
   double distance = std::numeric_limits<double>::max();
 
-  VertexSE2* _currentVertex=dynamic_cast<VertexSE2*>(currentVertex);
-  VertexSE2* closestVertex = 0; 
+  OptimizableGraph::Vertex* closestVertex = 0; 
   for (OptimizableGraph::VertexSet::iterator it = vset.begin(); it != vset.end(); it++){
-    VertexSE2 *v = (VertexSE2*) *it;
-    double d = distanceSE2(_currentVertex->estimate(), v->estimate());
+    OptimizableGraph::Vertex *v = (OptimizableGraph::Vertex*) *it;
+    double d = vertexDistance(currentVertex, v);
     if (d < distance){
       distance = d;
       closestVertex = v;
     }
   }
   return closestVertex;
-  
 }
