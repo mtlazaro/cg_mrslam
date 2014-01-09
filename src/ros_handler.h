@@ -53,8 +53,12 @@ class RosHandler
  public:
   RosHandler(int idRobot, int nRobots, int typeExperiment);
   
-  inline SE2 getOdom(){return _odom;};
+  inline void useOdom(bool useOdom){_useOdom = useOdom;}
+  inline void useLaser(bool useLaser){_useLaser = useLaser;}
+
+  SE2 getOdom();
   RobotLaser* getLaser();
+  
   inline SE2 getGroundTruth(int robot){return _gtPoses[robot];}
   inline ros::Time getTimeLastPing(int robot){return _timeLastPing[robot];}
 
@@ -81,23 +85,28 @@ class RosHandler
   ////////////////////
   ros::NodeHandle _nh;
 
+  //Subscribers
   ros::Subscriber _subOdom;
   ros::Subscriber _subScan;
   ros::Subscriber *_subgt;
   ros::Subscriber _subPing;
 
+  //Publishers
   ros::Publisher _pubRecv;
   ros::Publisher _pubSent;
   ros::Publisher _pubPing;
 
+  //Topics names
   std::string _odomTopic;
   std::string _scanTopic;
   
   int _idRobot;
   int _nRobots;
   int _typeExperiment;
-  
-  SE2 _odom;
+  bool _useOdom, _useLaser;
+
+  //ROS msgs
+  nav_msgs::Odometry _odom;
   sensor_msgs::LaserScan _laserscan;
   SE2 *_gtPoses;
 

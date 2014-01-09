@@ -95,6 +95,8 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 
   RosHandler rh(idRobot, nRobots, SIM_EXPERIMENT);
+  rh.useOdom(true);
+  rh.useLaser(true);
   rh.init();
   rh.run();
  

@@ -93,6 +93,8 @@ int main(int argc, char **argv)
   RosHandler rh(idRobot, nRobots, BAG_EXPERIMENT);
   rh.setOdomTopic(odometryTopic);
   rh.setScanTopic(scanTopic);
+  rh.useOdom(true);
+  rh.useLaser(true);
 
   rh.init();   //Wait for initial odometry and laserScan
   rh.run();

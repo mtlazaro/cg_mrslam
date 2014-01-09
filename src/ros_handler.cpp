@@ -40,6 +40,9 @@ RosHandler::RosHandler (int idRobot, int nRobots, int typeExperiment){
   
   _odomTopic = "odom";
   _scanTopic = "base_scan";
+
+  _useOdom = false;
+  _useLaser = false;
 }
 
 void RosHandler::pingCallback(const cg_mrslam::Ping::ConstPtr& msg){
@@ -57,13 +60,19 @@ void RosHandler::groundTruthCallback(const nav_msgs::Odometry::ConstPtr& msg, SE
 
 void RosHandler::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
 { 
-  _odom.setTranslation(Vector2d(msg->pose.pose.position.x, msg->pose.pose.position.y));
-  _odom.setRotation(tf::getYaw(msg->pose.pose.orientation));
+  _odom = *msg;
 }
 
 void RosHandler::scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
   _laserscan = *msg;
+}
+
+SE2 RosHandler::getOdom(){
+  SE2 odomSE2;
+  odomSE2.setTranslation(Vector2d(_odom.pose.pose.position.x, _odom.pose.pose.position.y));
+  odomSE2.setRotation(tf::getYaw(_odom.pose.pose.orientation));
+  return odomSE2;
 }
 
 RobotLaser* RosHandler::getLaser(){
@@ -75,7 +84,7 @@ RobotLaser* RosHandler::getLaser(){
 
   RobotLaser* rlaser = new RobotLaser;
   rlaser->setLaserParams(lparams);
-  rlaser->setOdomPose(_odom);
+  rlaser->setOdomPose(getOdom());
   std::vector<double> ranges(_laserscan.ranges.size());
   for (size_t i =0; i < _laserscan.ranges.size(); i++){
     ranges[i] = _laserscan.ranges[i];
@@ -88,17 +97,19 @@ RobotLaser* RosHandler::getLaser(){
   return rlaser;
 }
 
-
-
 void RosHandler::init(){
-  //Init Odom
-  nav_msgs::Odometry::ConstPtr odommsg = ros::topic::waitForMessage<nav_msgs::Odometry>(_odomTopic);
-  _odom.setTranslation(Vector2d(odommsg->pose.pose.position.x, odommsg->pose.pose.position.y));
-  _odom.setRotation(tf::getYaw(odommsg->pose.pose.orientation));
 
+  if (_useOdom){
+    //Init Odom
+    nav_msgs::Odometry::ConstPtr odommsg = ros::topic::waitForMessage<nav_msgs::Odometry>(_odomTopic);
+    _odom = *odommsg;
+  }
+  
+  if (_useLaser){
   //Init scan
-  sensor_msgs::LaserScan::ConstPtr lasermsg = ros::topic::waitForMessage<sensor_msgs::LaserScan>(_scanTopic);
-  _laserscan = *lasermsg;
+    sensor_msgs::LaserScan::ConstPtr lasermsg = ros::topic::waitForMessage<sensor_msgs::LaserScan>(_scanTopic);
+    _laserscan = *lasermsg;
+  }
 
   if (_typeExperiment == SIM_EXPERIMENT){
     //Init ground-truth
@@ -113,34 +124,29 @@ void RosHandler::init(){
 }
 
 void RosHandler::run(){
+  if (_useOdom) //Subscribe Odom
+    _subOdom = _nh.subscribe<nav_msgs::Odometry>(_odomTopic, 1000, &RosHandler::odomCallback, this);
+    
+  if (_useLaser) //Subscribe Laser
+    _subScan = _nh.subscribe<sensor_msgs::LaserScan>(_scanTopic, 1000,  &RosHandler::scanCallback, this);
+
   if (_typeExperiment == BAG_EXPERIMENT){
-    //subscribe odom, scan, ping, active_comm
-    _subOdom = _nh.subscribe<nav_msgs::Odometry>(_odomTopic, 1000, &RosHandler::odomCallback, this);
-    _subScan = _nh.subscribe<sensor_msgs::LaserScan>(_scanTopic, 1000,  &RosHandler::scanCallback, this);
+    //subscribe pings
     _subPing = _nh.subscribe<cg_mrslam::Ping>("ping_msgs", 1000, &RosHandler::pingCallback, this);
-
   } else if (_typeExperiment == SIM_EXPERIMENT){
-    //subscribe odom, scan and ground truth
-    _subOdom = _nh.subscribe<nav_msgs::Odometry>(_odomTopic, 1000, &RosHandler::odomCallback, this);
-    _subScan = _nh.subscribe<sensor_msgs::LaserScan>(_scanTopic, 1000,  &RosHandler::scanCallback, this);
-
+    //subscribe ground truth
     for (int r = 0; r < _nRobots; r++){
       std::stringstream nametopic;
       nametopic << "/robot_" << r << "/base_pose_ground_truth";
       _subgt[r] = _nh.subscribe<nav_msgs::Odometry>(nametopic.str(), 1000, boost::bind(&RosHandler::groundTruthCallback, this, _1, &_gtPoses[r]));
     }
   } else if (_typeExperiment == REAL_EXPERIMENT){
-    //subscribe odom, scan
-    _subOdom = _nh.subscribe<nav_msgs::Odometry>(_odomTopic, 1000, &RosHandler::odomCallback, this);
-    _subScan = _nh.subscribe<sensor_msgs::LaserScan>(_scanTopic, 1000,  &RosHandler::scanCallback, this);    
-
     //publish ping, sent and received messages
     _pubRecv = _nh.advertise<cg_mrslam::SLAM>("recv_msgs", 1);
     _pubSent = _nh.advertise<cg_mrslam::SLAM>("sent_msgs", 1);
     _pubPing = _nh.advertise<cg_mrslam::Ping>("ping_msgs", 1);
   }
 }
-
 
 void RosHandler::publishPing(int idRobotFrom){
   cg_mrslam::Ping rosmsg;

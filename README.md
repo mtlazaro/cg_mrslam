@@ -66,7 +66,7 @@ Related papers
 ---------------
 Please, cite the following paper when using this code:  
 
-- M.T. Lazaro, L.M. Paz, P.Pinies, J.A. Castellanos and G. Grisetti. Multi-Robot SLAM using Condensed Measurements. IEEE/RSJ International Conference on Intelligent Robots and Systems, 2013. (To appear)
+- M.T. Lazaro, L.M. Paz, P.Pinies, J.A. Castellanos and G. Grisetti. Multi-Robot SLAM using Condensed Measurements. IEEE/RSJ International Conference on Intelligent Robots and Systems, Tokyo Big Sight, Japan, Nov 3-8, pp. 1069-1076, 2013.
 
 Acknowledgements
 ----------------
