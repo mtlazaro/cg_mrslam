@@ -13,7 +13,7 @@ It is possible to use it also for single-robot SLAM.
 Requirements:
 -------------
 - This code uses the g2o framework for graph optimization  
-  Download the hierarchical branch:  
+  Download the **hierarchical** branch:  
 
         $ git clone -b g2o_hierarchical https://github.com/RainerKuemmerle/g2o.git
 

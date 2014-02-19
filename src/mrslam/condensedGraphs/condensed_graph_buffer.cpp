@@ -319,7 +319,7 @@ OptimizableGraph::Vertex* CondensedGraphBuffer::selectGaugeCentroid(OptimizableG
   
   OptimizableGraph::Vertex* bestGauge = 0;
   double bestDistance = std::numeric_limits<double>::max();
-  Vector2d sum;
+  Vector2d sum(.0,.0);
   for (OptimizableGraph::VertexIDMap::iterator it=vertices->begin(); it != vertices->end(); it++){
        VertexSE2* v = (VertexSE2*)(it->second);
        sum += v->estimate().translation();
