@@ -102,8 +102,8 @@ void GraphManipulator::fixGauge() {
   }*/
   
   //Fix vertices if in gauge, if not unfix
-  for (OptimizableGraph::VertexIDMap::iterator it=_optimizer->vertices().begin(); it!=_optimizer->vertices().end(); ++it) {
-    OptimizableGraph::Vertex* v= (OptimizableGraph::Vertex*)(it->second);
+  for (OptimizableGraph::VertexIDMap::iterator itv=_optimizer->vertices().begin(); itv!=_optimizer->vertices().end(); ++itv) {
+    OptimizableGraph::Vertex* v= (OptimizableGraph::Vertex*)(itv->second);
     OptimizableGraph::VertexSet::iterator it = _gauge.find(v);
     if (it != _gauge.end())
       v->setFixed(true);
