@@ -79,6 +79,8 @@ int main(int argc, char **argv)
   int idRobot;
   int nRobots;
   std::string outputFilename;
+  std::string odometryTopic, scanTopic;
+
   arg.param("resolution",  resolution, 0.025, "resolution of the matching grid");
   arg.param("maxScore",    maxScore, 0.15,     "score of the matcher, the higher the less matches");
   arg.param("kernelRadius", kernelRadius, 0.2,  "radius of the convolution kernel");
@@ -87,6 +89,8 @@ int main(int argc, char **argv)
   arg.param("inlierThreshold",  inlierThreshold, 2.,   "inlier threshold");
   arg.param("idRobot", idRobot, 0, "robot identifier" );
   arg.param("nRobots", nRobots, 1, "number of robots" );
+  arg.param("odometryTopic", odometryTopic, "odom", "odometry ROS topic");
+  arg.param("scanTopic", scanTopic, "scan", "scan ROS topic");
   arg.param("o", outputFilename, "", "file where to save output");
   arg.parseArgs(argc, argv);
 
@@ -94,7 +98,9 @@ int main(int argc, char **argv)
 
   ros::NodeHandle n;
 
-  RosHandler rh(idRobot, nRobots, SIM_EXPERIMENT);
+  RosHandler rh(idRobot, nRobots, REAL_EXPERIMENT);
+  rh.setOdomTopic(odometryTopic);
+  rh.setScanTopic(scanTopic);
   rh.useOdom(true);
   rh.useLaser(true);
   rh.init();
@@ -143,7 +149,7 @@ int main(int argc, char **argv)
       gettimeofday(&t_fin, NULL);
 
       secs = timeval_diff(&t_fin, &t_ini);
-      printf("%.16g milliseconds\n", secs * 1000.0);
+      printf("Optimization took %.16g milliseconds\n", secs * 1000.0);
 
       currEst = gslam.lastVertex()->estimate();
       char buf[100];
