@@ -60,7 +60,14 @@ In two different terminals type:
     $ rosrun cg_mrslam sim_mrslam -idRobot 0 -nRobots 2 -o testmrslam.g2o __ns:=robot_0
     $ rosrun cg_mrslam sim_mrslam -idRobot 1 -nRobots 2 -o testmrslam.g2o __ns:=robot_1 
 
-During the execution it will create one g2o file for each robot, named robot-x-testmrslam.g2o which can be openned with the **g2o_viewer**.
+During the execution it will create one g2o file for each robot, named robot-x-testmrslam.g2o which can be openned with the **g2o_viewer**.  
+
+Additionally, the graph can be visualized online using RViz.  The map will be drawn with respect the Fixed Frame which can be defined through the command line if it is different from the default one. For the  current example, to visualize the map of robot_0:
+
+    $ rosrun cg_mrslam sim_mrslam -idRobot 0 -nRobots 2 -fixedFrame /robot_0/odom -o testmrslam.g2o __ns:=robot_0
+
+Then, launch RViz (`rosrun rviz rviz`) and select /robot_0/odom as the Fixed Frame in Global options. The nodes of the graph are published as a PoseArray message on the /robot_0/trajectory topic while their associated laserscans are published as a PoinCloud on the /robot_0/lasermap topic.
+
 
 Related papers
 ---------------

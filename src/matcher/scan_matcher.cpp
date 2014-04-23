@@ -75,7 +75,7 @@ void ScanMatcher::resetGrid() {
 
 }
  
-void applyTransfToScan(SE2 transf, RawLaser::Point2DVector scan, RawLaser::Point2DVector& outScan){
+void ScanMatcher::applyTransfToScan(SE2 transf, RawLaser::Point2DVector scan, RawLaser::Point2DVector& outScan){
   outScan.resize(scan.size());
   for (unsigned int i = 0; i < scan.size(); i++){
     SE2 point;
@@ -98,11 +98,11 @@ void transformPointsFromVSet(OptimizableGraph::VertexSet& vset, OptimizableGraph
       SE2 trl = laserv->laserParams().laserPose;
       RawLaser::Point2DVector scanInRefVertex;
       if (vertex->id() == referenceVertex->id()){
-	applyTransfToScan(trl, vscan, scanInRefVertex);
+	ScanMatcher::applyTransfToScan(trl, vscan, scanInRefVertex);
       }else{
 	SE2 trel = referenceVertex->estimate().inverse() * vertex->estimate();
 	SE2 transf = trel * trl;
-	applyTransfToScan(transf, vscan, scanInRefVertex);
+	ScanMatcher::applyTransfToScan(transf, vscan, scanInRefVertex);
       }
       scansInRefVertex.insert(scansInRefVertex.end(), scanInRefVertex.begin(), scanInRefVertex.end());
     }

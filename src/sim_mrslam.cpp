@@ -26,24 +26,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "ros/ros.h"
-#include "nav_msgs/Odometry.h"
-#include "tf/tf.h"
-#include "sensor_msgs/LaserScan.h"
-#include "geometry_msgs/Twist.h"
-#include <boost/bind.hpp>
-
-#include "g2o/core/optimizable_graph.h"
-#include "g2o/core/sparse_optimizer.h"
-#include "g2o/core/block_solver.h"
-#include "g2o/core/factory.h"
-#include "g2o/core/optimization_algorithm_factory.h"
-#include "g2o/core/optimization_algorithm_gauss_newton.h"
-#include "g2o/solvers/csparse/linear_solver_csparse.h"
-
-#include "g2o/types/slam2d/vertex_se2.h"
-#include "g2o/types/slam2d/edge_se2.h"
-#include "g2o/types/data/robot_laser.h"
 #include "g2o/stuff/command_args.h"
 
 #include <string>
@@ -52,6 +34,7 @@
 #include "mrslam/mr_graph_slam.h"
 #include "mrslam/graph_comm.h"
 #include "ros_handler.h"
+#include "graph_ros_publisher.h"
 
 using namespace g2o;
 
@@ -80,6 +63,7 @@ int main(int argc, char **argv)
   int idRobot;
   int nRobots;
   std::string outputFilename;
+  std::string odometryTopic, scanTopic, fixedFrame;
   arg.param("resolution",  resolution, 0.025, "resolution of the matching grid");
   arg.param("maxScore",    maxScore, 0.15,     "score of the matcher, the higher the less matches");
   arg.param("kernelRadius", kernelRadius, 0.2,  "radius of the convolution kernel");
@@ -92,12 +76,13 @@ int main(int argc, char **argv)
   arg.param("minInliersMR",    minInliersMR, 5,     "min inliers for the intra-robot loop closure");
   arg.param("windowMRLoopClosure",  windowMRLoopClosure, 10,   "sliding window for the intra-robot loop closures");
   arg.param("logData",  logData, 0,   "to log computation times, transmition overload and ground truth map");
+  arg.param("odometryTopic", odometryTopic, "odom", "odometry ROS topic");
+  arg.param("scanTopic", scanTopic, "scan", "scan ROS topic");
+  arg.param("fixedFrame", fixedFrame, "odom", "fixed frame to visualize the graph with ROS Rviz");
   arg.param("o", outputFilename, "", "file where to save output");
   arg.parseArgs(argc, argv);
 
   ros::init(argc, argv, "sim_mrslam");
-
-  ros::NodeHandle n;
 
   RosHandler rh(idRobot, nRobots, SIM_EXPERIMENT);
   rh.useOdom(true);
@@ -125,7 +110,6 @@ int main(int argc, char **argv)
     bytesfile.open(bytesfilename.str().c_str());
   }
 
-  ros::Rate loop_rate(10);
 
   //Graph building
   MRGraphSLAM gslam, gtgraph;
@@ -144,13 +128,15 @@ int main(int argc, char **argv)
     gtgraph.setInitialData(currEst, rlaser);
   }
   
+  GraphRosPublisher graphPublisher(gslam.graph(), fixedFrame);
+
   ////////////////////
   //Setting up network
   std::string base_addr = "127.0.0.";
   GraphComm gc(&gslam, idRobot, nRobots, base_addr, SIM_EXPERIMENT);
   gc.init_network(&rh);
 
- 
+  ros::Rate loop_rate(10);
   while (ros::ok()){
     ros::spinOnce();
 
@@ -176,7 +162,7 @@ int main(int argc, char **argv)
       gettimeofday(&t_fin, NULL);
 
       secs = timeval_diff(&t_fin, &t_ini);
-      // printf("%.16g milliseconds\n", secs * 1000.0);
+      printf("Optimization took %.16g milliseconds\n", secs * 1000.0);
 
       currEst = gslam.lastVertex()->estimate();
       char buf[100];
@@ -190,6 +176,10 @@ int main(int argc, char **argv)
 	sprintf(buf2, "gt-robot-%i-%s", idRobot, outputFilename.c_str());
 	gtgraph.saveGraph(buf2);
       }
+
+      //Publish graph to visualize it on Rviz
+      graphPublisher.publishGraph();
+
     }
     
     loop_rate.sleep();

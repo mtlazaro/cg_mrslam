@@ -26,24 +26,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "ros/ros.h"
-#include "nav_msgs/Odometry.h"
-#include "tf/tf.h"
-#include "sensor_msgs/LaserScan.h"
-#include "geometry_msgs/Twist.h"
-#include <boost/bind.hpp>
-
-#include "g2o/core/optimizable_graph.h"
-#include "g2o/core/sparse_optimizer.h"
-#include "g2o/core/block_solver.h"
-#include "g2o/core/factory.h"
-#include "g2o/core/optimization_algorithm_factory.h"
-#include "g2o/core/optimization_algorithm_gauss_newton.h"
-#include "g2o/solvers/csparse/linear_solver_csparse.h"
-
-#include "g2o/types/slam2d/vertex_se2.h"
-#include "g2o/types/slam2d/edge_se2.h"
-#include "g2o/types/data/robot_laser.h"
 #include "g2o/stuff/command_args.h"
 
 #include <string>
@@ -52,6 +34,7 @@
 #include "mrslam/mr_graph_slam.h"
 #include "mrslam/graph_comm.h"
 #include "ros_handler.h"
+#include "graph_ros_publisher.h"
 
 using namespace g2o;
 
@@ -68,7 +51,7 @@ int main(int argc, char **argv)
   int idRobot;
   int nRobots;
   std::string outputFilename;
-  std::string odometryTopic, scanTopic;
+  std::string odometryTopic, scanTopic, fixedFrame;
 
   arg.param("resolution",  resolution, 0.025, "resolution of the matching grid");
   arg.param("maxScore",    maxScore, 0.15,     "score of the matcher, the higher the less matches");
@@ -83,12 +66,11 @@ int main(int argc, char **argv)
   arg.param("windowMRLoopClosure",  windowMRLoopClosure, 10,   "sliding window for the intra-robot loop closures");
   arg.param("odometryTopic", odometryTopic, "odom", "odometry ROS topic");
   arg.param("scanTopic", scanTopic, "scan", "scan ROS topic");
+  arg.param("fixedFrame", fixedFrame, "odom", "fixed frame to visualize the graph with ROS Rviz");
   arg.param("o", outputFilename, "", "file where to save output");
   arg.parseArgs(argc, argv);
 
   ros::init(argc, argv, "real_mrslam");
-
-  ros::NodeHandle n;
 
   RosHandler rh(idRobot, nRobots, REAL_EXPERIMENT);
   rh.setOdomTopic(odometryTopic);
@@ -98,7 +80,6 @@ int main(int argc, char **argv)
 
   rh.init();   //Wait for initial odometry and laserScan
   rh.run();
-
  
   //For estimation
   SE2 currEst = rh.getOdom();
@@ -117,6 +98,8 @@ int main(int argc, char **argv)
   RobotLaser* rlaser = rh.getLaser();
 
   gslam.setInitialData(odomPosk_1, rlaser);
+
+  GraphRosPublisher graphPublisher(gslam.graph(), fixedFrame);
 
   ////////////////////
   //Setting up network
@@ -148,6 +131,10 @@ int main(int argc, char **argv)
       char buf[100];
       sprintf(buf, "robot-%i-%s", idRobot, outputFilename.c_str());
       gslam.saveGraph(buf);
+
+      //Publish graph to visualize it on Rviz
+      graphPublisher.publishGraph();
+
     }
     
     loop_rate.sleep();

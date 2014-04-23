@@ -75,6 +75,7 @@ class ScanMatcher{
 				   OptimizableGraph::VertexSet& vset2, OptimizableGraph::Vertex* _referenceVertex2, 
 		      SE2 trel12, double *score);
   inline CharGrid grid() const {return _grid;}
+  static void applyTransfToScan(SE2 transf, RawLaser::Point2DVector scan, RawLaser::Point2DVector& outScan);
 
  protected:
   CharGrid _grid;

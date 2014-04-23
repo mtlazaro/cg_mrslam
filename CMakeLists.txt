@@ -60,6 +60,7 @@ include_directories(src)
 rosbuild_add_executable(sim_mrslam
   src/sim_mrslam.cpp 
   src/ros_handler.cpp
+  src/graph_ros_publisher.cpp
   src/matcher/scan_matcher.cpp
   src/matcher/chargrid.cpp
   src/slam/closure_checker.cpp
@@ -89,6 +90,7 @@ target_link_libraries(
 rosbuild_add_executable(real_mrslam 
   src/real_mrslam.cpp 
   src/ros_handler.cpp
+  src/graph_ros_publisher.cpp
   src/matcher/scan_matcher.cpp
   src/matcher/chargrid.cpp
   src/slam/closure_checker.cpp
@@ -118,6 +120,7 @@ target_link_libraries(
 rosbuild_add_executable(bag_mrslam
   src/bag_mrslam.cpp 
   src/ros_handler.cpp
+  src/graph_ros_publisher.cpp
   src/matcher/scan_matcher.cpp
   src/matcher/chargrid.cpp
   src/slam/closure_checker.cpp
@@ -147,6 +150,7 @@ target_link_libraries(
 rosbuild_add_executable(srslam 
   src/srslam.cpp 
   src/ros_handler.cpp
+  src/graph_ros_publisher.cpp
   src/matcher/scan_matcher.cpp
   src/matcher/chargrid.cpp
   src/slam/closure_checker.cpp
