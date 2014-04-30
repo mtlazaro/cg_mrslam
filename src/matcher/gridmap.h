@@ -202,7 +202,7 @@ _GridMap<T>::_GridMap(const Eigen::Vector2f& lowerLeft, const Eigen::Vector2f& u
   _inverseResolution = 1./_resolution;
   Eigen::Vector2f dSize = (upperRight - lowerLeft) * _inverseResolution;
   Eigen::Vector2i iSize(dSize.x(), dSize.y());
-  _allocator = _Array2DAllocator<0,0,CellType>(iSize.x(), iSize.x());
+  _allocator = _Array2DAllocator<0,0,CellType>(iSize.x(), iSize.y());
   
   for(int i = 0; i < size().x(); ++i)
   {
