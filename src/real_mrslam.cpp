@@ -103,8 +103,8 @@ int main(int argc, char **argv)
 
   ////////////////////
   //Setting up network
-  std::string base_addr = "127.0.0.";
-  GraphComm gc(&gslam, idRobot, nRobots, base_addr, BAG_EXPERIMENT);
+  std::string base_addr = "192.168.0.";
+  GraphComm gc(&gslam, idRobot, nRobots, base_addr, REAL_EXPERIMENT);
   gc.init_network(&rh);
 
   ros::Rate loop_rate(10);
@@ -125,6 +125,8 @@ int main(int argc, char **argv)
 
       gslam.addDataSM(odomPosk, laseri);
       gslam.findConstraints();
+      gslam.findInterRobotConstraints();
+
       gslam.optimize(5);
 
       currEst = gslam.lastVertex()->estimate();
