@@ -29,7 +29,7 @@ Installation
 - ROS indigo (catkin):
   - Change to branch indigo
 
-            $ git branch indigo
+            $ git checkout indigo
   - In your catkin workspace 
 
             $ catkin_make -DCMAKE_BUILD_TYPE=Release
