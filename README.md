@@ -13,18 +13,26 @@ It is possible to use it also for single-robot SLAM.
 Requirements:
 -------------
 - This code uses the g2o framework for graph optimization  
-  Download the **hierarchical** branch:  
-
+  Download the **HIERARCHICAL** branch:
+  
         $ git clone -b g2o_hierarchical https://github.com/RainerKuemmerle/g2o.git
 
-- [ROS fuerte.](http://www.ros.org/wiki/fuerte/Installation)
+- [ROS fuerte](http://wiki.ros.org/fuerte/Installation) OR [ROS indigo.](http://wiki.ros.org/indigo/Installation)
 
-The code has been tested on Ubuntu 12.04 LTS (64bits)
+The code has been tested on Ubuntu 12.04 and 14.04 (64bits). 
 
 Installation
 ------------
 - Download the source code to your ROS workspace directory
-- Type `rosmake` in the package directory
+- ROS fuerte:
+  - Type `rosmake` in the package directory
+- ROS indigo (catkin):
+  - Change to branch indigo
+
+            $ git branch indigo
+  - In your catkin workspace 
+
+            $ catkin_make -DCMAKE_BUILD_TYPE=Release
 
 Instructions
 ------------
@@ -57,14 +65,14 @@ Open one terminal and type from the bagfiles directory (make sure you launched `
 
 In two different terminals type:
 
-    $ rosrun cg_mrslam sim_mrslam -idRobot 0 -nRobots 2 -o testmrslam.g2o __ns:=robot_0
-    $ rosrun cg_mrslam sim_mrslam -idRobot 1 -nRobots 2 -o testmrslam.g2o __ns:=robot_1 
+    $ rosrun cg_mrslam sim_mrslam -idRobot 0 -nRobots 2 -scanTopic base_scan -o testmrslam.g2o __ns:=robot_0
+    $ rosrun cg_mrslam sim_mrslam -idRobot 1 -nRobots 2 -scanTopic base_scan -o testmrslam.g2o __ns:=robot_1 
 
 During the execution it will create one g2o file for each robot, named robot-x-testmrslam.g2o which can be openned with the **g2o_viewer**.  
 
 Additionally, the graph can be visualized online using RViz.  The map will be drawn with respect the Fixed Frame which can be defined through the command line if it is different from the default one. For the  current example, to visualize the map of robot_0:
 
-    $ rosrun cg_mrslam sim_mrslam -idRobot 0 -nRobots 2 -fixedFrame /robot_0/odom -o testmrslam.g2o __ns:=robot_0
+    $ rosrun cg_mrslam sim_mrslam -idRobot 0 -nRobots 2 -scanTopic base_scan -fixedFrame /robot_0/odom -o testmrslam.g2o __ns:=robot_0
 
 Then, launch RViz (`rosrun rviz rviz`) and select /robot_0/odom as the Fixed Frame in Global options. The nodes of the graph are published as a PoseArray message on the /robot_0/trajectory topic while their associated laserscans are published as a PoinCloud on the /robot_0/lasermap topic.
 
@@ -79,4 +87,3 @@ Acknowledgements
 ----------------
 - Giorgio Grisetti for his guidance in the development of this project during my stay at La Sapienza University of Rome.
 - Taigo M. Bonnani from La Sapienza University of Rome for his collaboration in the implementation of the scan matcher.
-
