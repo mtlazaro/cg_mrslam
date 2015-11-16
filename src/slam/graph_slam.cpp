@@ -388,6 +388,10 @@ bool GraphSLAM::isMyVertex(OptimizableGraph::Vertex *v){
 void GraphSLAM::findConstraints(){
   boost::mutex::scoped_lock lockg(graphMutex);
 
+  //graph is quickly optimized first so last added edge is satisfied
+  _graph->initializeOptimization();
+  _graph->optimize(1);
+
   OptimizableGraph::VertexSet vset;
   _vf.findVerticesScanMatching( _lastVertex, vset);
 
