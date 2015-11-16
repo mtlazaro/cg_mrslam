@@ -138,7 +138,8 @@ void CovarianceEstimator::compute() {
       blockIndices.push_back(std::make_pair(v->hessianIndex(), v->hessianIndex()));
     }
   }
-  _optimizer->computeMarginals(spinv, blockIndices);
+  if (blockIndices.size())
+    _optimizer->computeMarginals(spinv, blockIndices);
   
   popState();
 }
