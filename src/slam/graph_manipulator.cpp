@@ -144,13 +144,13 @@ void CovarianceEstimator::compute() {
   popState();
 }
 
-MatrixXd CovarianceEstimator::getCovariance(OptimizableGraph::Vertex *v){
+Eigen::MatrixXd CovarianceEstimator::getCovariance(OptimizableGraph::Vertex *v){
   OptimizableGraph::VertexSet::iterator it = _gauge.find(v);
   assert( (it == _gauge.end()) && "trying to get covariance from fixed vertex");
   it = _vertices.find(v);
   assert( (it != _vertices.end()) && "trying to get covariance from a vertex not contained in vertices");
 
-  MatrixXd cov;
+  Eigen::MatrixXd cov;
   if (v->hessianIndex()>=0)
     cov = *(spinv.block(v->hessianIndex(), v->hessianIndex()));
   return cov;

@@ -224,7 +224,7 @@ void MRGraphSLAM::addInterRobotData(ComboMessage* cmsg, OptimizableGraph::Vertex
       
 	ne->setMeasurement(transf);
       
-	Matrix3d inf = 100 * Matrix3d::Identity();
+	Eigen::Matrix3d inf = 100 * Eigen::Matrix3d::Identity();
 	inf(2,2) = 1000;
 	ne->setInformation(inf);
       
@@ -294,7 +294,7 @@ void MRGraphSLAM::findInterRobotConstraints(){
       
 	  ne->setMeasurement(transf);
 
-	  Matrix3d inf = 100 * Matrix3d::Identity();
+	  Eigen::Matrix3d inf = 100 * Eigen::Matrix3d::Identity();
 	  inf(2,2) = 1000;
 	  ne->setInformation(inf);
 
@@ -359,7 +359,7 @@ void MRGraphSLAM::addInterRobotData(CondensedGraphMessage* gmsg){
 
 	//cerr << "Adding subgraph edge from " << idFrom << " to " << idTo << " Estimate: " << emsg->edgeVector[i].estimate[0] << " " << emsg->edgeVector[i].estimate[1] << " " << emsg->edgeVector[i].estimate[2] << endl;
 
-	Matrix3d inf;
+	Eigen::Matrix3d inf;
 	inf(0,0) = emsg->edgeVector[i].information[0];
 	inf(0,1) = emsg->edgeVector[i].information[1];
 	inf(0,2) = emsg->edgeVector[i].information[2];
@@ -446,7 +446,7 @@ void MRGraphSLAM::addInterRobotData(GraphMessage* gmsg){
 		emsg->edgeVector[i].estimate[1],
 		emsg->edgeVector[i].estimate[2]);
 
-	Matrix3d inf;
+	Eigen::Matrix3d inf;
 	inf(0,0) = emsg->edgeVector[i].information[0];
 	inf(0,1) = emsg->edgeVector[i].information[1];
 	inf(0,2) = emsg->edgeVector[i].information[2];
@@ -533,7 +533,7 @@ EdgeArrayMessage* MRGraphSLAM::constructEdgeArrayMessage(OptimizableGraph::EdgeS
       emsg->edgeVector[i].estimate[1] = e->measurement().translation().y();
       emsg->edgeVector[i].estimate[2] = e->measurement().rotation().angle();
 
-      Matrix3d inf = e->information();
+      Eigen::Matrix3d inf = e->information();
       emsg->edgeVector[i].information[0] = inf(0,0);
       emsg->edgeVector[i].information[1] = inf(0,1);
       emsg->edgeVector[i].information[2] = inf(0,2);
