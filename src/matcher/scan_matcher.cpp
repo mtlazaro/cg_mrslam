@@ -31,7 +31,7 @@
 #include <iostream>
 using namespace std;
 
-ScanMatcher::ScanMatcher() :_grid(Vector2f(-15, -15), Vector2f(15, 15), 0.025, 128){
+ScanMatcher::ScanMatcher() :_grid(Eigen::Vector2f(-15, -15), Eigen::Vector2f(15, 15), 0.025, 128){
  _kscale =  128;
  }
 
@@ -60,7 +60,7 @@ void ScanMatcher::initializeKernel(double resolution, double kernelRange){
   _kernelRange = kernelRange;
 }
 
-void ScanMatcher::initializeGrid(Vector2f lowerLeft, Vector2f upperRight, double resolution){
+void ScanMatcher::initializeGrid(Eigen::Vector2f lowerLeft, Eigen::Vector2f upperRight, double resolution){
   CharGrid tmp(lowerLeft, upperRight, resolution, _kscale);
   _grid = tmp;
 }
@@ -68,7 +68,7 @@ void ScanMatcher::initializeGrid(Vector2f lowerLeft, Vector2f upperRight, double
 void ScanMatcher::resetGrid() {
   int K2=_kernelRange * _kscale;
   
-  Vector2i size = _grid.grid().size();
+  Eigen::Vector2i size = _grid.grid().size();
   for (int i = 0; i<size.x(); i++)
     for (int j = 0; j<size.y(); j++)
       _grid.grid().cell(i,j) = K2;
@@ -133,7 +133,7 @@ bool ScanMatcher::closeScanMatching(OptimizableGraph::VertexSet& vset, Optimizab
 
   SE2 delta = originVertex->estimate().inverse() * currentVertex->estimate();
 
-  Vector3d initGuess(delta.translation().x(), delta.translation().y(), delta.rotation().angle());
+  Eigen::Vector3d initGuess(delta.translation().x(), delta.translation().y(), delta.rotation().angle());
 
   std::vector<MatcherResult> mresvec;
   clock_t t_ini, t_fin;
@@ -142,8 +142,8 @@ bool ScanMatcher::closeScanMatching(OptimizableGraph::VertexSet& vset, Optimizab
   t_ini = clock();
 
   double thetaRes = 0.0125*.5; // was 0.01
-  Vector3f lower(-.3+initGuess.x(), -.3+initGuess.y(), -0.2+initGuess.z());
-  Vector3f upper(+.3+initGuess.x(),  .3+initGuess.y(),  0.2+initGuess.z()); 
+  Eigen::Vector3f lower(-.3+initGuess.x(), -.3+initGuess.y(), -0.2+initGuess.z());
+  Eigen::Vector3f upper(+.3+initGuess.x(),  .3+initGuess.y(),  0.2+initGuess.z()); 
   _grid.greedySearch(mresvec, cvScanRobot, lower, upper, thetaRes, maxScore, 0.5, 0.5, 0.2);
   t_fin = clock();
 
@@ -151,8 +151,8 @@ bool ScanMatcher::closeScanMatching(OptimizableGraph::VertexSet& vset, Optimizab
   printf("Greedy search: %.16g ms. Matcher results: %i\n", secs * 1000.0, (int) mresvec.size());
 
   if (mresvec.size()){
-    Vector3d adj=mresvec[0].transformation;
-    trel->setTranslation(Vector2d(adj.x(), adj.y()));
+    Eigen::Vector3d adj=mresvec[0].transformation;
+    trel->setTranslation(Eigen::Vector2d(adj.x(), adj.y()));
     trel->setRotation(adj.z());
     //cerr <<  "bestScore = " << mresvec[0].score << endl << endl; 
 
@@ -222,8 +222,8 @@ bool ScanMatcher::scanMatchingLC(OptimizableGraph::VertexSet& referenceVset,  Op
     if (vertex->id() != referenceVertex->id())
       relposv = referenceVertex->estimate().inverse() * vertex->estimate();
     
-    Vector3f lower(-.5+relposv.translation().x(), -2.+relposv.translation().y(), -1.+relposv.rotation().angle());
-    Vector3f upper( .5+relposv.translation().x(),  2.+relposv.translation().y(),  1.+relposv.rotation().angle());
+    Eigen::Vector3f lower(-.5+relposv.translation().x(), -2.+relposv.translation().y(), -1.+relposv.rotation().angle());
+    Eigen::Vector3f upper( .5+relposv.translation().x(),  2.+relposv.translation().y(),  1.+relposv.rotation().angle());
     reg.lowerLeft  = lower;
     reg.upperRight = upper;
     regions.push_back(reg);
@@ -273,9 +273,9 @@ bool ScanMatcher::scanMatchingLC(OptimizableGraph::VertexSet& referenceVset,  Op
 
   for (std::map<DiscreteTriplet, MatcherResult>::iterator it = resultsMap.begin(); it!= resultsMap.end(); it++){
     MatcherResult res = it->second;
-    Vector3d adj=res.transformation;
+    Eigen::Vector3d adj=res.transformation;
     SE2 transf;
-    transf.setTranslation(Vector2d(adj.x(), adj.y()));
+    transf.setTranslation(Eigen::Vector2d(adj.x(), adj.y()));
     transf.setRotation(normalize_theta(adj.z()));
     trel.push_back(transf);
     
@@ -310,10 +310,10 @@ bool ScanMatcher::scanMatchingLChierarchical(OptimizableGraph::VertexSet& refere
 
   SE2 delta = referenceVertex->estimate().inverse() * currentVertex->estimate();
 
-  Vector3d initGuess(delta.translation().x(), delta.translation().y(), delta.rotation().angle());
+  Eigen::Vector3d initGuess(delta.translation().x(), delta.translation().y(), delta.rotation().angle());
 
-  Vector3f lower(-2.+initGuess.x(), -2.+initGuess.y(), -1.+initGuess.z());
-  Vector3f upper(+2.+initGuess.x(),  2.+initGuess.y(),  1.+initGuess.z()); 
+  Eigen::Vector3f lower(-2.+initGuess.x(), -2.+initGuess.y(), -1.+initGuess.z());
+  Eigen::Vector3f upper(+2.+initGuess.x(),  2.+initGuess.y(),  1.+initGuess.z()); 
 
   RegionVector regions;
   Region reg;
@@ -334,9 +334,9 @@ bool ScanMatcher::scanMatchingLChierarchical(OptimizableGraph::VertexSet& refere
   // printf("%.16g ms. Matcher results: %i\n", secs * 1000.0, (int) mresvec.size());
 
   if (mresvec.size()){
-    Vector3d adj=mresvec[0].transformation;
+    Eigen::Vector3d adj=mresvec[0].transformation;
     SE2 transf;
-    transf.setTranslation(Vector2d(adj.x(), adj.y()));
+    transf.setTranslation(Eigen::Vector2d(adj.x(), adj.y()));
     transf.setRotation(adj.z());
     //    cerr <<  " bestScore = " << mresvec[0].score << endl; 
     //cerr << "Found Loop Closure Edge. Transf: " << adj.x() << " " << adj.y() << " " << adj.z() << endl << endl;
@@ -377,8 +377,8 @@ bool ScanMatcher::globalMatching(OptimizableGraph::VertexSet& referenceVset, Opt
   //cerr << "Hierarchical Search: " << endl;
 
   double thetaRes = 0.025;
-  Vector3f lower(- 10, - 5, -M_PI);
-  Vector3f upper(+ 10, + 5,  M_PI); 
+  Eigen::Vector3f lower(- 10, - 5, -M_PI);
+  Eigen::Vector3f upper(+ 10, + 5,  M_PI); 
 
   Vector2dVector reducedScans;
   CharGrid::subsample(reducedScans, scansInCurVertex, 0.1);
@@ -391,8 +391,8 @@ bool ScanMatcher::globalMatching(OptimizableGraph::VertexSet& referenceVset, Opt
   //printf("%.16g ms\n", secs * 1000.0);
   //cerr << "matcher results: " << mresvec.size();
   if (mresvec.size()){
-    Vector3d adj=mresvec[0].transformation;
-    trel->setTranslation(Vector2d(adj.x(), adj.y()));
+    Eigen::Vector3d adj=mresvec[0].transformation;
+    trel->setTranslation(Eigen::Vector2d(adj.x(), adj.y()));
     trel->setRotation(adj.z());
     //cerr <<  " bestScore = " << mresvec[0].score << endl; 
 
@@ -486,8 +486,8 @@ bool ScanMatcher::verifyMatching(OptimizableGraph::VertexSet& vset1, Optimizable
 
 
   //Counting points around trel12
-  Vector2f lower(-.3+trel12.translation().x(), -.3+trel12.translation().y());
-  Vector2f upper(+.3+trel12.translation().x(), +.3+trel12.translation().y()); 
+  Eigen::Vector2f lower(-.3+trel12.translation().x(), -.3+trel12.translation().y());
+  Eigen::Vector2f upper(+.3+trel12.translation().x(), +.3+trel12.translation().y()); 
   
   auxGrid.countPoints(lower, upper, score);
   cerr << "Score: " << *score << endl;

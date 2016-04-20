@@ -6,7 +6,7 @@ namespace g2o {
 
   using namespace std;
 
-  typedef SigmaPoint<VectorXd> MySigmaPoint;
+  typedef SigmaPoint<Eigen::VectorXd> MySigmaPoint;
 
   EdgeLabeler::EdgeLabeler(SparseOptimizer* optimizer) {
     _optimizer = optimizer;
@@ -22,7 +22,7 @@ namespace g2o {
     }
 
 
-    SparseBlockMatrix<MatrixXd> spInv;
+    SparseBlockMatrix<Eigen::MatrixXd> spInv;
 
     bool result = computePartialInverse(spInv, pattern);
     //cerr << "partial inverse computed = " << result << endl;
@@ -54,7 +54,7 @@ namespace g2o {
     }
   }
   
-  bool EdgeLabeler::computePartialInverse(SparseBlockMatrix<MatrixXd>& spinv, const std::set<std::pair<int,int> >& pattern){
+  bool EdgeLabeler::computePartialInverse(SparseBlockMatrix<Eigen::MatrixXd>& spinv, const std::set<std::pair<int,int> >& pattern){
     std::vector<std::pair<int, int> > blockIndices(pattern.size());
     // Why this does not work???
     //std::copy(pattern.begin(),pattern.end(),blockIndices.begin());
@@ -68,9 +68,9 @@ namespace g2o {
     return _optimizer->computeMarginals(spinv, blockIndices);
   }
 
-  bool EdgeLabeler::labelEdge( const SparseBlockMatrix<MatrixXd>& spinv, OptimizableGraph::Edge* e){
+  bool EdgeLabeler::labelEdge( const SparseBlockMatrix<Eigen::MatrixXd>& spinv, OptimizableGraph::Edge* e){
 
-    Eigen::Map<MatrixXd> info(e->informationData(), e->dimension(), e->dimension());
+    Eigen::Map<Eigen::MatrixXd> info(e->informationData(), e->dimension(), e->dimension());
     // cerr << "original information matrix" << endl;
     // cerr << info << endl;
 
@@ -85,7 +85,7 @@ namespace g2o {
 
 
     //cerr << "maxDim= " << maxDim << endl;
-    MatrixXd cov(maxDim, maxDim);
+    Eigen::MatrixXd cov(maxDim, maxDim);
     int cumRow=0;
     for (size_t i=0; i<e->vertices().size(); i++){
       const OptimizableGraph::Vertex* vr=(const OptimizableGraph::Vertex*) e->vertices()[i];
@@ -124,7 +124,7 @@ namespace g2o {
     // cerr << "covariance assembled" << endl;
     // cerr << cov << endl;
     // now cov contains the aggregate marginals of the state variables in the edge
-    VectorXd incMean(maxDim);
+    Eigen::VectorXd incMean(maxDim);
     incMean.fill(0);
     std::vector<MySigmaPoint, Eigen::aligned_allocator<MySigmaPoint> > incrementPoints;
     if (! sampleUnscented(incrementPoints, incMean, cov)){
@@ -179,7 +179,7 @@ namespace g2o {
 
       // construct the sigma point in the error space
       e->computeError();
-      Map<VectorXd> errorPoint(e->errorData(),e->dimension());
+      Eigen::Map<Eigen::VectorXd> errorPoint(e->errorData(),e->dimension());
 
       errorPoints[i]._sample=errorPoint;
       errorPoints[i]._wi=incrementPoints[i]._wi;
@@ -197,8 +197,8 @@ namespace g2o {
     }
 
     // reconstruct the covariance of the error by the sigma points 
-    MatrixXd errorCov(e->dimension(), e->dimension());
-    VectorXd errorMean(e->dimension()); 
+    Eigen::MatrixXd errorCov(e->dimension(), e->dimension());
+    Eigen::VectorXd errorMean(e->dimension()); 
     reconstructGaussian(errorMean, errorCov, errorPoints);
     info=errorCov.inverse();
     

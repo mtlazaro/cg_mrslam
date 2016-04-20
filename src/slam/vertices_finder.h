@@ -37,7 +37,7 @@
 using namespace g2o;
 
 inline double distanceSE2(SE2 r1, SE2 r2){
-  Vector2d t = r1.translation()-r2.translation();
+  Eigen::Vector2d t = r1.translation()-r2.translation();
   return t.norm();
 }
 
@@ -63,7 +63,7 @@ struct MyCostFunction : public HyperDijkstra::CostFunction {
     /* std::cout << "From: " << from->id() << " = " << from->estimate().translation().x() << " " <<  from->estimate().translation().y() << " " << from->estimate().rotation().angle() << std::endl; */
     /* std::cout << "To: " << to->id() << " = " << to->estimate().translation().x() << " " <<  to->estimate().translation().y() << " " << to->estimate().rotation().angle() << std::endl; */
 
-    Vector2d dt=from->estimate().translation()-to->estimate().translation();
+    Eigen::Vector2d dt=from->estimate().translation()-to->estimate().translation();
    
     /* std::cout << "Distance: " << dt.norm() << std::endl; */
     return dt.norm();

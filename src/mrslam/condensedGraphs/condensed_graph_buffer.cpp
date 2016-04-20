@@ -319,19 +319,19 @@ OptimizableGraph::Vertex* CondensedGraphBuffer::selectGaugeCentroid(OptimizableG
   
   OptimizableGraph::Vertex* bestGauge = 0;
   double bestDistance = std::numeric_limits<double>::max();
-  Vector2d sum(.0,.0);
+  Eigen::Vector2d sum(.0,.0);
   for (OptimizableGraph::VertexIDMap::iterator it=vertices->begin(); it != vertices->end(); it++){
        VertexSE2* v = (VertexSE2*)(it->second);
        sum += v->estimate().translation();
    }
 
-  Vector2d centroid(sum.x()/vertices->size(), sum.y()/vertices->size());
+  Eigen::Vector2d centroid(sum.x()/vertices->size(), sum.y()/vertices->size());
 
   for (OptimizableGraph::VertexIDMap::iterator it=vertices->begin(); it != vertices->end(); it++){
     OptimizableGraph::Vertex* candidateGauge = (OptimizableGraph::Vertex*)(it->second);
     VertexSE2* vse2 = dynamic_cast<VertexSE2*>(candidateGauge);
     
-    Vector2d vdist = vse2->estimate().translation() - centroid;
+    Eigen::Vector2d vdist = vse2->estimate().translation() - centroid;
     double currentDistance = vdist.norm();
 
     if (currentDistance < bestDistance){

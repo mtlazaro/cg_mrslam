@@ -57,9 +57,9 @@ void GraphSLAM::init(double resolution, double kernelRadius, int windowLoopClosu
 
   //Init scan matchers
   _closeMatcher.initializeKernel(resolution, kernelRadius);
-  _closeMatcher.initializeGrid(Vector2f(-15, -15), Vector2f(15, 15), resolution);
+  _closeMatcher.initializeGrid(Eigen::Vector2f(-15, -15), Eigen::Vector2f(15, 15), resolution);
   _LCMatcher.initializeKernel(0.1, 0.5); //before 0.1, 0.5
-  _LCMatcher.initializeGrid(Vector2f(-35, -35), Vector2f(35, 35), 0.1); //before 0.1
+  _LCMatcher.initializeGrid(Eigen::Vector2f(-35, -35), Eigen::Vector2f(35, 35), 0.1); //before 0.1
   cerr << "Grids initialized\n";
 
 
@@ -69,10 +69,10 @@ void GraphSLAM::init(double resolution, double kernelRadius, int windowLoopClosu
   minInliers = minInliers_;
 
   //
-  _odominf =  100 * Matrix3d::Identity();
+  _odominf =  100 * Eigen::Matrix3d::Identity();
   _odominf(2,2) = 1000;
 
-  _SMinf = 1000 * Matrix3d::Identity();
+  _SMinf = 1000 * Eigen::Matrix3d::Identity();
   _SMinf(2,2) = 10000;
 }
 
@@ -326,10 +326,10 @@ void GraphSLAM::checkCovariance(OptimizableGraph::VertexSet& vset){
   for (OptimizableGraph::VertexSet::iterator it = tmpvset.begin(); it != tmpvset.end(); it++){
     VertexSE2 *vertex = (VertexSE2*) *it;
     
-    MatrixXd Pv = ce.getCovariance(vertex);
-    Matrix2d Pxy; Pxy << Pv(0,0), Pv(0,1), Pv(1,0), Pv(1,1);
+    Eigen::MatrixXd Pv = ce.getCovariance(vertex);
+    Eigen::Matrix2d Pxy; Pxy << Pv(0,0), Pv(0,1), Pv(1,0), Pv(1,1);
     SE2 delta = vertex->estimate().inverse() * _lastVertex->estimate();	
-    Vector2d hxy (delta.translation().x(), delta.translation().y());
+    Eigen::Vector2d hxy (delta.translation().x(), delta.translation().y());
     double perceptionRange =1;
     if (hxy.x()-perceptionRange>0) 
       hxy.x() -= perceptionRange;

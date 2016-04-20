@@ -100,8 +100,8 @@ class GraphSLAM{
 
   LoopClosureChecker lcc;
 
-  Matrix3d _odominf;
-  Matrix3d _SMinf;
+  Eigen::Matrix3d _odominf;
+  Eigen::Matrix3d _SMinf;
   OptimizableGraph::EdgeSet _odomEdges;
   OptimizableGraph::EdgeSet _SMEdges;
 
