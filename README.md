@@ -33,11 +33,12 @@ Installation
 ------------
 - Download the source code to your ROS workspace directory
 - ROS fuerte:
-  - Type `rosmake` in the package directory
-- ROS indigo (catkin):
-  - Change to branch indigo
+  - Make sure you are in branch fuerte  
 
             $ git checkout indigo
+  - Type `rosmake` in the package directory
+- ROS indigo (catkin):
+  - Installation for ROS indigo is supported in the default branch (master)
   - In your catkin workspace 
 
             $ catkin_make -DCMAKE_BUILD_TYPE=Release
