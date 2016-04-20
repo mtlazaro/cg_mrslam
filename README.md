@@ -35,7 +35,7 @@ Installation
 - ROS fuerte:
   - Make sure you are in branch fuerte  
 
-            $ git checkout indigo
+            $ git checkout fuerte
   - Type `rosmake` in the package directory
 - ROS indigo (catkin):
   - Installation for ROS indigo is supported in the default branch (master)
