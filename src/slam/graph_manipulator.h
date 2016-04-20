@@ -58,10 +58,10 @@ protected:
 struct CovarianceEstimator: public GraphManipulator {
   CovarianceEstimator(SparseOptimizer* optimizer);
   void compute();
-  MatrixXd getCovariance(OptimizableGraph::Vertex *v);
+  Eigen::MatrixXd getCovariance(OptimizableGraph::Vertex *v);
 
  protected:
-  SparseBlockMatrix<MatrixXd> spinv;
+  SparseBlockMatrix<Eigen::MatrixXd> spinv;
 };
 
 

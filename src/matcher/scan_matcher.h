@@ -43,7 +43,7 @@ class ScanMatcher{
   ScanMatcher();
 
   void initializeKernel(double resolution, double kernelRange);
-  void initializeGrid(Vector2f lowerLeft, Vector2f upperRight, double resolution);
+  void initializeGrid(Eigen::Vector2f lowerLeft, Eigen::Vector2f upperRight, double resolution);
   void resetGrid();
  
   bool closeScanMatching(OptimizableGraph::VertexSet& vset, OptimizableGraph::Vertex* _originVertex, 
