@@ -12,10 +12,18 @@ It is possible to use it also for single-robot SLAM.
 
 Requirements:
 -------------
-- This code uses the g2o framework for graph optimization  
-  Download the **HIERARCHICAL** branch:
+- This code uses the **g2o** framework for graph optimization  
   
-        $ git clone -b g2o_hierarchical https://github.com/RainerKuemmerle/g2o.git
+        $ git clone https://github.com/RainerKuemmerle/g2o.git
+
+  - Set up the following **g2o** environment variables in your ~/.bashrc:  
+
+            #set up G2O
+            export G2O_ROOT=path_to_your_g2o_installation  
+            export G2O_BIN=${G2O_ROOT}/bin  
+            export G2O_LIB=${G2O_ROOT}/lib  
+            export LD_LIBRARY_PATH=${G2O_LIB}:${LD_LIBRARY_PATH}  
+            export PATH=${G2O_BIN}:${PATH}  
 
 - [ROS fuerte](http://wiki.ros.org/fuerte/Installation) OR [ROS indigo.](http://wiki.ros.org/indigo/Installation)
 
