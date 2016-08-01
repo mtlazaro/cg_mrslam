@@ -85,6 +85,8 @@ Additionally, the graph can be visualized online using RViz.  The map will be dr
 
 Then, launch RViz (`rosrun rviz rviz`) and select /robot_0/odom as the Fixed Frame in Global options. The nodes of the graph are published as a PoseArray message on the /robot_0/trajectory topic while their associated laserscans are published as a PoinCloud on the /robot_0/lasermap topic.
 
+Another possibility is to convert the .g2o file into an occupancy grid compatible with ROS/Stage using the following tool:
+https://bitbucket.org/mtlazaro/g2o2ros
 
 Related papers
 ---------------
