@@ -78,7 +78,7 @@ SE2 RosHandler::getOdom(){
 RobotLaser* RosHandler::getLaser(){
 
   //LaserParameters lparams(0, _laserscan.ranges.size(), _laserscan.angle_min,  _laserscan.angle_increment, _laserscan.range_max, 0.1, 0);
-  LaserParameters lparams(0, _laserscan.ranges.size(), _laserscan.angle_min,  _laserscan.angle_increment, 8.0, 0.1, 0);
+  LaserParameters lparams(0, _laserscan.ranges.size(), _laserscan.angle_min,  _laserscan.angle_increment, min(8.0f , _laserscan.range_max), 0.1, 0);
   SE2 trobotlaser(0, 0, 0); //TODO: get transformation from tf
   lparams.laserPose = trobotlaser;
 
