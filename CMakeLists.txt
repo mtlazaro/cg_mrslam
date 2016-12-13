@@ -263,6 +263,14 @@ target_link_libraries(bag_mrslam
 )
 add_dependencies(bag_mrslam cg_mrslam_generate_messages_cpp)
 
+add_executable(comm_publisher
+  src/comm_publisher.cpp 
+)
+target_link_libraries(comm_publisher
+  ${catkin_LIBRARIES}  
+  ${G2O_STUFF_LIBRARY}
+)
+add_dependencies(comm_publisher cg_mrslam_generate_messages_cpp)
 
 #############
 ## Install ##
