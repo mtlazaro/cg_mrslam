@@ -42,6 +42,8 @@ MRGraphSLAM::MRGraphSLAM() :condensedGraphs(GraphSLAM::graph()),
   factory->registerMessageType<EdgeArrayMessage>();
   factory->registerMessageType<VertexArrayMessage>();
   factory->registerMessageType<RobotLaserMessage>();
+
+  detectRobotInRange = false;
 			    }
 
 void MRGraphSLAM::setIdRobot(int idRobot){
@@ -212,29 +214,32 @@ void MRGraphSLAM::addInterRobotData(ComboMessage* cmsg, OptimizableGraph::Vertex
     
     if (shouldIAdd){
       cerr << "Found inter robot match" << endl;
-      double score;
-      bool robotDetected = _LCMatcher.verifyMatching(referenceVset, referenceVertex, vset, v, transf, &score); 
-      if (robotDetected){
-	//cerr << "Adding edge from " << referenceVertex->id() << " to " << v->id() 
-	//     << " Estimate: "  << transf.translation().x() << " " << transf.translation().y() << " " << transf.rotation().angle() << endl;
 
-	EdgeSE2 *ne = new EdgeSE2;
-	ne->vertices()[0] = referenceVertex;
-	ne->vertices()[1] = v;
-      
-	ne->setMeasurement(transf);
-      
-	Eigen::Matrix3d inf = 100 * Eigen::Matrix3d::Identity();
-	inf(2,2) = 1000;
-	ne->setInformation(inf);
-      
-	ClosureBuffer closure;
-	closure.addVertex(v);
-	closure.addEdge(ne);
+      if (detectRobotInRange){
+	double score;
+	bool robotDetected = _LCMatcher.verifyMatching(referenceVset, referenceVertex, vset, v, transf, &score); 
 
-	interRobotClosures.insert(closure, cmsg->robotId());
-      }else{cerr << "Not Robot Detected in Range" << endl;}
- 
+	if (!robotDetected){
+	  cerr << "Not Robot Detected in Range" << endl;
+	  return;
+	}
+      }
+
+      EdgeSE2 *ne = new EdgeSE2;
+      ne->vertices()[0] = referenceVertex;
+      ne->vertices()[1] = v;
+      
+      ne->setMeasurement(transf);
+      
+      Eigen::Matrix3d inf = 100 * Eigen::Matrix3d::Identity();
+      inf(2,2) = 1000;
+      ne->setInformation(inf);
+      
+      ClosureBuffer closure;
+      closure.addVertex(v);
+      closure.addEdge(ne);
+      
+      interRobotClosures.insert(closure, cmsg->robotId());
     }  else {
       ClosureBuffer c;
       c.addVertex(v);
@@ -282,29 +287,36 @@ void MRGraphSLAM::findInterRobotConstraints(){
       bool shouldIAdd = _LCMatcher.globalMatching(referenceVset, referenceVertex, v, &transf, maxScoreMR);
       if (shouldIAdd){
 	cerr << "Found match with vertex " << v->id() << endl;
-	double score;
-	OptimizableGraph::VertexSet vset;
-	vset.insert(v);
-	bool robotDetected = _LCMatcher.verifyMatching(referenceVset, referenceVertex, vset, v, transf, &score); 
-	if (robotDetected){
-	  //If matched, remove from interRobotVertices, add to interRobotClosures
-	  EdgeSE2 *ne = new EdgeSE2;
-	  ne->vertices()[0] = referenceVertex;
-	  ne->vertices()[1] = v;
-      
-	  ne->setMeasurement(transf);
 
-	  Eigen::Matrix3d inf = 100 * Eigen::Matrix3d::Identity();
-	  inf(2,2) = 1000;
-	  ne->setInformation(inf);
-
-	  ClosureBuffer closure;
-	  closure.addVertex(v);
-	  closure.addEdge(ne);
-
-	  interRobotClosures.insert(closure, robotId);
-	  interRobotVertices.remove(closure, robotId);
-	}else {cerr << "Not Robot Detected in Range" << endl;}
+	if (detectRobotInRange){
+	  double score;
+	  OptimizableGraph::VertexSet vset;
+	  vset.insert(v);
+	  bool robotDetected = _LCMatcher.verifyMatching(referenceVset, referenceVertex, vset, v, transf, &score);
+	  
+	  if (!robotDetected){
+	    cerr << "Not Robot Detected in Range" << endl;
+	    continue;
+	  } 
+	}
+	
+	//If matched, remove from interRobotVertices, add to interRobotClosures
+	EdgeSE2 *ne = new EdgeSE2;
+	ne->vertices()[0] = referenceVertex;
+	ne->vertices()[1] = v;
+	
+	ne->setMeasurement(transf);
+	
+	Eigen::Matrix3d inf = 100 * Eigen::Matrix3d::Identity();
+	inf(2,2) = 1000;
+	ne->setInformation(inf);
+	
+	ClosureBuffer closure;
+	closure.addVertex(v);
+	closure.addEdge(ne);
+	
+	interRobotClosures.insert(closure, robotId);
+	interRobotVertices.remove(closure, robotId);
       }
     }
     

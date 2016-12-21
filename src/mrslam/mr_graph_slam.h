@@ -48,6 +48,8 @@ class MRGraphSLAM : public GraphSLAM
   void setIdRobot(int idRobot);
   void setInterRobotClosureParams(double maxScoreMR_, int minInliersMR_, int windowMRLoopClosure_);
 
+  inline void setDetectRobotInRange(bool detectRobotInRange_){detectRobotInRange = detectRobotInRange_;}
+
   void addInterRobotData(StampedRobotMessage vmsg);
   
   void findInterRobotConstraints();
@@ -68,6 +70,8 @@ class MRGraphSLAM : public GraphSLAM
   double maxScoreMR;
   int minInliersMR;
   int windowMRLoopClosure;
+
+  bool detectRobotInRange;
 
   MessageFactory *factory;
 
