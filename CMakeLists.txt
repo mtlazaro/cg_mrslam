@@ -84,8 +84,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES cg_mrslam
-   CATKIN_DEPENDS message_runtime
+LIBRARIES cg_mrslam_matcher_library cg_mrslam_slam_library cg_mrslam_ros_utils_library cg_mrslam_library
+CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 )
 
@@ -141,24 +141,21 @@ ENDIF(G2O_FOUND)
 
 include_directories(${G2O_INCLUDE_DIR})
 
-include_directories(src)
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ${PROJECT_SOURCE_DIR}/src
+)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 
-include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_executable(srslam 
   src/srslam.cpp
-  src/ros_handler.cpp
-  src/graph_ros_publisher.cpp
-  src/matcher/scan_matcher.cpp
-  src/matcher/chargrid.cpp
-  src/slam/closure_checker.cpp
-  src/slam/closure_buffer.cpp
-  src/slam/vertices_finder.cpp
-  src/slam/graph_manipulator.cpp
-  src/slam/graph_slam.cpp
-  src/mrslam/msg_factory.cpp
 )
 target_link_libraries(srslam 
+  cg_mrslam_matcher_library
+  cg_mrslam_slam_library
+  cg_mrslam_ros_utils_library
+  cg_mrslam_library
   ${catkin_LIBRARIES}  
   ${CSPARSE_LIBRARY}
   ${G2O_TYPES_DATA}
@@ -172,24 +169,13 @@ add_dependencies(srslam cg_mrslam_generate_messages_cpp)
 
 add_executable(sim_mrslam
   src/sim_mrslam.cpp 
-  src/ros_handler.cpp
-  src/graph_ros_publisher.cpp
-  src/matcher/scan_matcher.cpp
-  src/matcher/chargrid.cpp
-  src/slam/closure_checker.cpp
-  src/slam/closure_buffer.cpp
-  src/slam/vertices_finder.cpp
-  src/slam/graph_manipulator.cpp
-  src/slam/graph_slam.cpp
-  src/mrslam/mr_graph_slam.cpp
-  src/mrslam/msg_factory.cpp
-  src/mrslam/mr_closure_buffer.cpp
-  src/mrslam/graph_comm.cpp
-  src/mrslam/condensedGraphs/condensed_graph_buffer.cpp
-  src/mrslam/condensedGraphs/edge_labeler.cpp
-  src/mrslam/condensedGraphs/condensed_graph_creator.cpp
 )
 target_link_libraries(sim_mrslam
+  cg_mrslam_matcher_library
+  cg_mrslam_slam_library
+  cg_mrslam_ros_utils_library
+  cg_mrslam_condensed_graph_library
+  cg_mrslam_library
   ${catkin_LIBRARIES}  
   ${CSPARSE_LIBRARY}
   ${G2O_TYPES_DATA}
@@ -203,24 +189,13 @@ add_dependencies(sim_mrslam cg_mrslam_generate_messages_cpp)
 
 add_executable(real_mrslam
   src/real_mrslam.cpp 
-  src/ros_handler.cpp
-  src/graph_ros_publisher.cpp
-  src/matcher/scan_matcher.cpp
-  src/matcher/chargrid.cpp
-  src/slam/closure_checker.cpp
-  src/slam/closure_buffer.cpp
-  src/slam/vertices_finder.cpp
-  src/slam/graph_manipulator.cpp
-  src/slam/graph_slam.cpp
-  src/mrslam/mr_graph_slam.cpp
-  src/mrslam/msg_factory.cpp
-  src/mrslam/mr_closure_buffer.cpp
-  src/mrslam/graph_comm.cpp
-  src/mrslam/condensedGraphs/condensed_graph_buffer.cpp
-  src/mrslam/condensedGraphs/edge_labeler.cpp
-  src/mrslam/condensedGraphs/condensed_graph_creator.cpp
-)
+  )
 target_link_libraries(real_mrslam
+  cg_mrslam_matcher_library
+  cg_mrslam_slam_library
+  cg_mrslam_ros_utils_library
+  cg_mrslam_condensed_graph_library
+  cg_mrslam_library
   ${catkin_LIBRARIES}  
   ${CSPARSE_LIBRARY}
   ${G2O_TYPES_DATA}
@@ -234,24 +209,13 @@ add_dependencies(real_mrslam cg_mrslam_generate_messages_cpp)
 
 add_executable(bag_mrslam
   src/bag_mrslam.cpp 
-  src/ros_handler.cpp
-  src/graph_ros_publisher.cpp
-  src/matcher/scan_matcher.cpp
-  src/matcher/chargrid.cpp
-  src/slam/closure_checker.cpp
-  src/slam/closure_buffer.cpp
-  src/slam/vertices_finder.cpp
-  src/slam/graph_manipulator.cpp
-  src/slam/graph_slam.cpp
-  src/mrslam/mr_graph_slam.cpp
-  src/mrslam/msg_factory.cpp
-  src/mrslam/mr_closure_buffer.cpp
-  src/mrslam/graph_comm.cpp
-  src/mrslam/condensedGraphs/condensed_graph_buffer.cpp
-  src/mrslam/condensedGraphs/edge_labeler.cpp
-  src/mrslam/condensedGraphs/condensed_graph_creator.cpp
 )
 target_link_libraries(bag_mrslam
+  cg_mrslam_matcher_library
+  cg_mrslam_slam_library
+  cg_mrslam_ros_utils_library
+  cg_mrslam_condensed_graph_library
+  cg_mrslam_library
   ${catkin_LIBRARIES}  
   ${CSPARSE_LIBRARY}
   ${G2O_TYPES_DATA}

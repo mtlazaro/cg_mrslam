@@ -31,7 +31,7 @@
 
 #include "slam/graph_slam.h"
 #include "msg_factory.h"
-#include "condensedGraphs/condensed_graph_buffer.h"
+#include "condensed_graph/condensed_graph_buffer.h"
 #include "mr_closure_buffer.h"
 
 struct StampedRobotMessage{

@@ -32,8 +32,8 @@
 #include <sstream> 
 
 #include "slam/graph_slam.h"
-#include "ros_handler.h"
-#include "graph_ros_publisher.h"
+#include "ros_utils/ros_handler.h"
+#include "ros_utils/graph_ros_publisher.h"
 
 using namespace g2o;
 

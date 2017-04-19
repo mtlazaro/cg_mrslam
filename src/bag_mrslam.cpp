@@ -33,8 +33,8 @@
 
 #include "mrslam/mr_graph_slam.h"
 #include "mrslam/graph_comm.h"
-#include "ros_handler.h"
-#include "graph_ros_publisher.h"
+#include "ros_utils/ros_handler.h"
+#include "ros_utils/graph_ros_publisher.h"
 
 using namespace g2o;
 

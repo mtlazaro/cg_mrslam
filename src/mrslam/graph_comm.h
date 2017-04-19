@@ -39,7 +39,7 @@
 #include "mr_graph_slam.h"
 #include <boost/thread.hpp>
 
-#include "ros_handler.h"
+#include "ros_utils/ros_handler.h"
 
 #define SIM_EXPERIMENT 0
 #define REAL_EXPERIMENT 1
