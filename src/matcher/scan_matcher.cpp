@@ -153,7 +153,7 @@ bool ScanMatcher::closeScanMatching(OptimizableGraph::VertexSet& vset, Optimizab
   if (mresvec.size()){
     Eigen::Vector3d adj=mresvec[0].transformation;
     trel->setTranslation(Eigen::Vector2d(adj.x(), adj.y()));
-    trel->setRotation(adj.z());
+    trel->setRotation(Eigen::Rotation2Dd(adj.z()));
     //cerr <<  "bestScore = " << mresvec[0].score << endl << endl; 
 
     // if (currentVertex->id() > 120 && currentVertex->id() < 200){
@@ -276,7 +276,7 @@ bool ScanMatcher::scanMatchingLC(OptimizableGraph::VertexSet& referenceVset,  Op
     Eigen::Vector3d adj=res.transformation;
     SE2 transf;
     transf.setTranslation(Eigen::Vector2d(adj.x(), adj.y()));
-    transf.setRotation(normalize_theta(adj.z()));
+    transf.setRotation(Eigen::Rotation2Dd(adj.z()));
     trel.push_back(transf);
     
     std::cerr << "Final result: " << transf.translation().x() << " " << transf.translation().y() << " " << transf.rotation().angle() << std::endl;
@@ -337,7 +337,7 @@ bool ScanMatcher::scanMatchingLChierarchical(OptimizableGraph::VertexSet& refere
     Eigen::Vector3d adj=mresvec[0].transformation;
     SE2 transf;
     transf.setTranslation(Eigen::Vector2d(adj.x(), adj.y()));
-    transf.setRotation(adj.z());
+    transf.setRotation(Eigen::Rotation2Dd(adj.z()));
     //    cerr <<  " bestScore = " << mresvec[0].score << endl; 
     //cerr << "Found Loop Closure Edge. Transf: " << adj.x() << " " << adj.y() << " " << adj.z() << endl << endl;
 
@@ -393,7 +393,7 @@ bool ScanMatcher::globalMatching(OptimizableGraph::VertexSet& referenceVset, Opt
   if (mresvec.size()){
     Eigen::Vector3d adj=mresvec[0].transformation;
     trel->setTranslation(Eigen::Vector2d(adj.x(), adj.y()));
-    trel->setRotation(adj.z());
+    trel->setRotation(Eigen::Rotation2Dd(adj.z()));
     //cerr <<  " bestScore = " << mresvec[0].score << endl; 
 
     // CharMatcher auxGrid = _LCGrid;

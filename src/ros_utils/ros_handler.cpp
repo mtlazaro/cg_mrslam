@@ -55,7 +55,7 @@ void RosHandler::pingCallback(const cg_mrslam::Ping::ConstPtr& msg){
 void RosHandler::groundTruthCallback(const nav_msgs::Odometry::ConstPtr& msg, SE2 *gtpose)
 { 
   gtpose->setTranslation(Eigen::Vector2d(-msg->pose.pose.position.y,  msg->pose.pose.position.x));
-  gtpose->setRotation(tf::getYaw(msg->pose.pose.orientation)+M_PI_2);
+  gtpose->setRotation(Eigen::Rotation2Dd(tf::getYaw(msg->pose.pose.orientation)+M_PI_2));
 }
 
 void RosHandler::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
@@ -71,7 +71,7 @@ void RosHandler::scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 SE2 RosHandler::getOdom(){
   SE2 odomSE2;
   odomSE2.setTranslation(Eigen::Vector2d(_odom.pose.pose.position.x, _odom.pose.pose.position.y));
-  odomSE2.setRotation(tf::getYaw(_odom.pose.pose.orientation));
+  odomSE2.setRotation(Eigen::Rotation2Dd(tf::getYaw(_odom.pose.pose.orientation)));
   return odomSE2;
 }
 
