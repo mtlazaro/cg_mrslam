@@ -83,9 +83,9 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-LIBRARIES cg_mrslam_matcher_library cg_mrslam_slam_library cg_mrslam_ros_utils_library cg_mrslam_library
-CATKIN_DEPENDS message_runtime
+  INCLUDE_DIRS src
+  LIBRARIES cg_mrslam_matcher_library cg_mrslam_slam_library cg_mrslam_ros_utils_library cg_mrslam_library
+  CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 )
 
