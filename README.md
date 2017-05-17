@@ -27,7 +27,7 @@ Requirements:
 
 - [ROS Fuerte](http://wiki.ros.org/fuerte/Installation), OR [ROS Indigo.](http://wiki.ros.org/indigo/Installation) OR [ROS Kinetic.](http://wiki.ros.org/kinetic/Installation)
 
-The code has been tested on Ubuntu 12.04 and 14.04 (64bits). 
+The code has been tested on Ubuntu 12.04, 14.04 and 16.04 (64bits). 
 
 Installation
 ------------
