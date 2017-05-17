@@ -25,7 +25,7 @@ Requirements:
             export LD_LIBRARY_PATH=${G2O_LIB}:${LD_LIBRARY_PATH}  
             export PATH=${G2O_BIN}:${PATH}  
 
-- [ROS fuerte](http://wiki.ros.org/fuerte/Installation) OR [ROS indigo.](http://wiki.ros.org/indigo/Installation)
+- [ROS Fuerte](http://wiki.ros.org/fuerte/Installation), OR [ROS Indigo.](http://wiki.ros.org/indigo/Installation) OR [ROS Kinetic.](http://wiki.ros.org/kinetic/Installation)
 
 The code has been tested on Ubuntu 12.04 and 14.04 (64bits). 
 
@@ -37,8 +37,8 @@ Installation
 
             $ git checkout fuerte
   - Type `rosmake` in the package directory
-- ROS indigo (catkin):
-  - Installation for ROS indigo is supported in the default branch (master)
+- ROS Indigo OR ROS Kinetic (catkin):
+  - Installation for ROS Indigo or ROS Kinetic is supported in the default branch (master)
   - In your catkin workspace 
 
             $ catkin_make -DCMAKE_BUILD_TYPE=Release
