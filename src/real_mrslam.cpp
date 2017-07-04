@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     if (initialPose.size()==3){
       currEst = SE2(initialPose[0],initialPose[1],initialPose[2]);
     }else {
-      std::cerr << "Error. Provide a valid initial pose (x, y, theta)" << initialPose.size() << std::endl;
+      std::cerr << "Error. Provide a valid initial pose (x, y, theta)" << std::endl;
       exit(0);
     }
   }else{
