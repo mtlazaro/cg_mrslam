@@ -52,7 +52,9 @@ int main(int argc, char **argv)
   int nRobots;
   std::string outputFilename;
   std::string odometryTopic, scanTopic, fixedFrame;
-
+  std::vector<double> initialPose;
+  initialPose.clear();
+  
   arg.param("resolution",  resolution, 0.025, "resolution of the matching grid");
   arg.param("maxScore",    maxScore, 0.15,     "score of the matcher, the higher the less matches");
   arg.param("kernelRadius", kernelRadius, 0.2,  "radius of the convolution kernel");
@@ -67,6 +69,7 @@ int main(int argc, char **argv)
   arg.param("odometryTopic", odometryTopic, "odom", "odometry ROS topic");
   arg.param("scanTopic", scanTopic, "scan", "scan ROS topic");
   arg.param("fixedFrame", fixedFrame, "odom", "fixed frame to visualize the graph with ROS Rviz");
+  arg.param("initialPose", initialPose, std::vector<double>(), "Pose of the first vertex in the graph. Usage: -initial_pose 0,0,0");
   arg.param("o", outputFilename, "", "file where to save output");
   arg.parseArgs(argc, argv);
 
@@ -80,11 +83,22 @@ int main(int argc, char **argv)
 
   rh.init();   //Wait for initial odometry and laserScan
   rh.run();
- 
+
   //For estimation
-  SE2 currEst = rh.getOdom();
+  SE2 currEst;
+  SE2 odomPosk_1 = rh.getOdom();
+  if (initialPose.size()){
+    if (initialPose.size()==3){
+      currEst = SE2(initialPose[0],initialPose[1],initialPose[2]);
+    }else {
+      std::cerr << "Error. Provide a valid initial pose (x, y, theta)" << initialPose.size() << std::endl;
+      exit(0);
+    }
+  }else{
+    currEst = odomPosk_1;
+  }
+  
   std::cout << "My initial position is: " << currEst.translation().x() << " " << currEst.translation().y() << " " << currEst.rotation().angle() << std::endl;
-  SE2 odomPosk_1 = currEst;
   std::cout << "My initial odometry is: " << odomPosk_1.translation().x() << " " << odomPosk_1.translation().y() << " " << odomPosk_1.rotation().angle() << std::endl;
 
   //Graph building
@@ -97,7 +111,7 @@ int main(int argc, char **argv)
 
   RobotLaser* rlaser = rh.getLaser();
 
-  gslam.setInitialData(odomPosk_1, rlaser);
+  gslam.setInitialData(currEst, rlaser);
 
   GraphRosPublisher graphPublisher(gslam.graph(), fixedFrame);
 
@@ -123,7 +137,7 @@ int main(int argc, char **argv)
       //Add new data
       RobotLaser* laseri = rh.getLaser();
 
-      gslam.addDataSM(odomPosk, laseri);
+      gslam.addDataSM(currEst, laseri);
       gslam.findConstraints();
       gslam.findInterRobotConstraints();
 
