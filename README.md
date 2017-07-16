@@ -66,7 +66,8 @@ The default parameters work well in general, anyway for specific program options
 
     $ rosrun cg_mrslam mainProgram --help
   
-###Example of use:###
+### Example of use:
+
 Some simulation bagfiles are provided. In the case of use them, there is no need to launch the Stage simulator.  
 Open one terminal and type from the bagfiles directory (make sure you launched `roscore` before):
 
@@ -79,11 +80,13 @@ In two different terminals type:
 
 During the execution it will create one g2o file for each robot, named robot-x-testmrslam.g2o which can be openned with the **g2o_viewer**.  
 
-Additionally, the graph can be visualized online using RViz.  The map will be drawn with respect the Fixed Frame which can be defined through the command line if it is different from the default one. For the  current example, to visualize the map of robot_0:
+The graph generated can be visualized online using RViz. The map will be drawn with respect the map frame which can be defined through the command line if it is different from the default one (/map). Additionally, is it possible to publish the transform from map to odom using the program option ```-publishTransform```. For the current example, to visualize the map of robot_0:
 
-    $ rosrun cg_mrslam sim_mrslam -idRobot 0 -nRobots 2 -scanTopic base_scan -fixedFrame /robot_0/odom -o testmrslam.g2o __ns:=robot_0
+    $ rosrun cg_mrslam sim_mrslam -idRobot 0 -nRobots 2 -scanTopic base_scan -mapFrame /robot_0/map -odomFrame /robot_0/odom -publishTransform -o testmrslam.g2o __ns:=robot_0
 
-Then, launch RViz (`rosrun rviz rviz`) and select /robot_0/odom as the Fixed Frame in Global options. The nodes of the graph are published as a PoseArray message on the /robot_0/trajectory topic while their associated laserscans are published as a PoinCloud on the /robot_0/lasermap topic.
+Then, launch RViz (`rosrun rviz rviz`) and select /robot_0/map as the Fixed Frame in Global options. The nodes of the graph are published as a PoseArray message on the /robot_0/trajectory topic while their associated laserscans are published as a PoinCloud on the /robot_0/lasermap topic. See the following screenshot as example of visualization:
+
+![cg_mrslam](/bagfiles/cg_mrslam.png)
 
 Another possibility is to convert the .g2o file into an occupancy grid compatible with ROS/Stage using the following tool:
 https://bitbucket.org/mtlazaro/g2o2ros
@@ -98,3 +101,4 @@ Acknowledgements
 ----------------
 - Giorgio Grisetti for his guidance in the development of this project during my stay at La Sapienza University of Rome.
 - Taigo M. Bonnani from La Sapienza University of Rome for his collaboration in the implementation of the scan matcher.
+
