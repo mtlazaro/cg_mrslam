@@ -31,6 +31,7 @@
 
 #include "ros/ros.h"
 #include "tf/tf.h"
+#include "tf/transform_broadcaster.h"
 
 #include "sensor_msgs/PointCloud.h"
 #include "geometry_msgs/PoseArray.h"
@@ -51,18 +52,20 @@ using namespace std;
 class GraphRosPublisher
 {
  public:
-  GraphRosPublisher(OptimizableGraph* graph, string fixedFrame);
+  GraphRosPublisher(OptimizableGraph* graph, string mapFrame, string odomFrame);
 
   void publishGraph();
+  void publishMapTransform(SE2 lastVertexEstimate, SE2 lastOdom);
 
  protected:
   ros::NodeHandle _nh;
 
   ros::Publisher _pubtj;
   ros::Publisher _publm;
-  
+  tf::TransformBroadcaster _broadcaster;
+
   OptimizableGraph* _graph;
-  string _fixedFrame;
+  string _mapFrame, _odomFrame;
 };
 
 #endif

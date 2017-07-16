@@ -28,9 +28,10 @@
 
 #include "graph_ros_publisher.h"
 
-GraphRosPublisher::GraphRosPublisher(OptimizableGraph* graph, string fixedFrame){
+GraphRosPublisher::GraphRosPublisher(OptimizableGraph* graph, string mapFrame, string odomFrame){
   _graph = graph;
-  _fixedFrame = fixedFrame;
+  _mapFrame = mapFrame;
+  _odomFrame = odomFrame;
 
   _pubtj = _nh.advertise<geometry_msgs::PoseArray>("trajectory", 1);
   _publm = _nh.advertise<sensor_msgs::PointCloud>("lasermap", 1);
@@ -73,9 +74,30 @@ void GraphRosPublisher::publishGraph(){
     i++;
   }
   
-  traj.header.frame_id = _fixedFrame;
+  traj.header.frame_id = _mapFrame;
   pcloud.header.frame_id = traj.header.frame_id;
   _publm.publish(pcloud);
   _pubtj.publish(traj);
+
+}
+
+
+void GraphRosPublisher::publishMapTransform(SE2 lastVertexEstimate, SE2 lastOdom){
+
+  assert(_graph && "Cannot publish: undefined graph");
+
+  SE2 delta_map_odom = lastVertexEstimate*lastOdom.inverse();
+  tf::Transform tmp_tf(tf::createQuaternionFromYaw(delta_map_odom.rotation().angle()),
+		       tf::Vector3(delta_map_odom.translation().x(),
+				   delta_map_odom.translation().y(),
+				   0.0));
+  
+  tf::StampedTransform map_to_odom(tmp_tf,
+				   ros::Time::now(),
+				   _mapFrame, _odomFrame);
+
+  _broadcaster.sendTransform(map_to_odom);
+
+
 
 }

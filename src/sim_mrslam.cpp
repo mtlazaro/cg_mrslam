@@ -63,7 +63,9 @@ int main(int argc, char **argv)
   int idRobot;
   int nRobots;
   std::string outputFilename;
-  std::string odometryTopic, scanTopic, fixedFrame;
+  std::string odometryTopic, scanTopic, odomFrame, mapFrame;
+  bool publishTransform;
+
   arg.param("resolution",  resolution, 0.025, "resolution of the matching grid");
   arg.param("maxScore",    maxScore, 0.15,     "score of the matcher, the higher the less matches");
   arg.param("kernelRadius", kernelRadius, 0.2,  "radius of the convolution kernel");
@@ -78,7 +80,9 @@ int main(int argc, char **argv)
   arg.param("logData",  logData, 0,   "to log computation times, transmition overload and ground truth map");
   arg.param("odometryTopic", odometryTopic, "odom", "odometry ROS topic");
   arg.param("scanTopic", scanTopic, "scan", "scan ROS topic");
-  arg.param("fixedFrame", fixedFrame, "odom", "fixed frame to visualize the graph with ROS Rviz");
+  arg.param("odomFrame", odomFrame, "odom", "odom frame");
+  arg.param("mapFrame", mapFrame, "map", "map frame");
+  arg.param("publishTransform", publishTransform, false, "Publish map transform");
   arg.param("o", outputFilename, "", "file where to save output");
   arg.parseArgs(argc, argv);
 
@@ -128,7 +132,14 @@ int main(int argc, char **argv)
     gtgraph.setInitialData(currEst, rlaser);
   }
   
-  GraphRosPublisher graphPublisher(gslam.graph(), fixedFrame);
+  GraphRosPublisher graphPublisher(gslam.graph(), mapFrame, odomFrame);
+  if (publishTransform)
+    graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
+
+  char buf[100];
+  sprintf(buf, "robot-%i-%s", idRobot, outputFilename.c_str());
+  ofstream ofmap(buf);
+  gslam.graph()->saveVertex(ofmap, gslam.lastVertex());
 
   ////////////////////
   //Setting up network
@@ -179,11 +190,23 @@ int main(int argc, char **argv)
 
       //Publish graph to visualize it on Rviz
       graphPublisher.publishGraph();
-
+      //Publish map transform with corrected estimate
+      if (publishTransform)
+	graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
+      
+    }else {
+      //Publish map transform with last corrected estimate + odometry drift
+      if (publishTransform)
+	graphPublisher.publishMapTransform(currEst, odomPosk_1);
     }
     
     loop_rate.sleep();
   }
   
+  cerr << "Last Optimization...";
+  gslam.optimize(5);
+  gslam.saveGraph(buf);
+  cerr << "Done" << endl;
+
   return 0;
 }
