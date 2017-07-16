@@ -31,6 +31,7 @@
 
 #include "ros/ros.h"
 #include "tf/tf.h"
+#include "tf/transform_listener.h"
 #include "nav_msgs/Odometry.h"
 #include "sensor_msgs/LaserScan.h"
 
@@ -64,6 +65,8 @@ class RosHandler
 
   inline void setOdomTopic(std::string odomTopic) {_odomTopic = odomTopic;}
   inline void setScanTopic(std::string scanTopic) {_scanTopic = scanTopic;}
+
+  inline void setBaseFrame(std::string baseFrameId) {_baseFrameId = baseFrameId;}
 
   void init();
   void run();
@@ -104,6 +107,8 @@ class RosHandler
   int _nRobots;
   int _typeExperiment;
   bool _useOdom, _useLaser;
+  string _baseFrameId;
+  SE2 _trobotlaser;
 
   //ROS msgs
   nav_msgs::Odometry _odom;

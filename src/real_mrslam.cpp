@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   int idRobot;
   int nRobots;
   std::string outputFilename;
-  std::string odometryTopic, scanTopic, odomFrame, mapFrame;
+  std::string odometryTopic, scanTopic, odomFrame, mapFrame, baseFrame;
   std::vector<double> initialPose;
   initialPose.clear();
   bool publishTransform;
@@ -71,6 +71,7 @@ int main(int argc, char **argv)
   arg.param("scanTopic", scanTopic, "scan", "scan ROS topic");
   arg.param("odomFrame", odomFrame, "odom", "odom frame");
   arg.param("mapFrame", mapFrame, "map", "map frame");
+  arg.param("baseFrame", baseFrame, "/base_link", "base robot frame");
   arg.param("initialPose", initialPose, std::vector<double>(), "Pose of the first vertex in the graph. Usage: -initial_pose 0,0,0");
   arg.param("publishTransform", publishTransform, false, "Publish map transform");
   arg.param("o", outputFilename, "", "file where to save output");
@@ -81,6 +82,7 @@ int main(int argc, char **argv)
   RosHandler rh(idRobot, nRobots, REAL_EXPERIMENT);
   rh.setOdomTopic(odometryTopic);
   rh.setScanTopic(scanTopic);
+  rh.setBaseFrame(baseFrame);
   rh.useOdom(true);
   rh.useLaser(true);
 

@@ -41,6 +41,9 @@ RosHandler::RosHandler (int idRobot, int nRobots, int typeExperiment){
   _odomTopic = "odom";
   _scanTopic = "base_scan";
 
+  _baseFrameId = "base_link";
+  _trobotlaser = SE2(0,0,0);
+
   _useOdom = false;
   _useLaser = false;
 }
@@ -79,8 +82,7 @@ RobotLaser* RosHandler::getLaser(){
 
   //LaserParameters lparams(0, _laserscan.ranges.size(), _laserscan.angle_min,  _laserscan.angle_increment, _laserscan.range_max, 0.1, 0);
   LaserParameters lparams(0, _laserscan.ranges.size(), _laserscan.angle_min,  _laserscan.angle_increment, min(8.0f , _laserscan.range_max), 0.1, 0);
-  SE2 trobotlaser(0, 0, 0); //TODO: get transformation from tf
-  lparams.laserPose = trobotlaser;
+  lparams.laserPose = _trobotlaser;
 
   RobotLaser* rlaser = new RobotLaser;
   rlaser->setLaserParams(lparams);
@@ -109,6 +111,24 @@ void RosHandler::init(){
   //Init scan
     sensor_msgs::LaserScan::ConstPtr lasermsg = ros::topic::waitForMessage<sensor_msgs::LaserScan>(_scanTopic);
     _laserscan = *lasermsg;
+
+    tf::StampedTransform laserTransform;
+    try {
+      tf::TransformListener listener;
+      listener.waitForTransform(_baseFrameId, lasermsg->header.frame_id,
+				ros::Time::now(), ros::Duration(0.5));
+      listener.lookupTransform(_baseFrameId, lasermsg->header.frame_id,
+			       ros::Time::now(), laserTransform);
+      _trobotlaser = SE2(laserTransform.getOrigin().x(),
+			 laserTransform.getOrigin().y(),
+			 tf::getYaw(laserTransform.getRotation()));
+    }
+    catch (tf::TransformException ex){
+      ROS_ERROR("cg_mrslam: %s",ex.what());
+      ros::Duration(1.0).sleep();
+    }
+
+    std::cerr << "Robot-laser transform: (" << _trobotlaser.translation().x() << ", " << _trobotlaser.translation().y() << ", " << _trobotlaser.rotation().angle() << ")" << std::endl;
   }
 
   if (_typeExperiment == SIM_EXPERIMENT){

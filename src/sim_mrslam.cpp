@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   int idRobot;
   int nRobots;
   std::string outputFilename;
-  std::string odometryTopic, scanTopic, odomFrame, mapFrame;
+  std::string odometryTopic, scanTopic, odomFrame, mapFrame, baseFrame;
   bool publishTransform;
 
   arg.param("resolution",  resolution, 0.025, "resolution of the matching grid");
@@ -82,6 +82,7 @@ int main(int argc, char **argv)
   arg.param("scanTopic", scanTopic, "scan", "scan ROS topic");
   arg.param("odomFrame", odomFrame, "odom", "odom frame");
   arg.param("mapFrame", mapFrame, "map", "map frame");
+  arg.param("baseFrame", baseFrame, "/base_link", "base robot frame");
   arg.param("publishTransform", publishTransform, false, "Publish map transform");
   arg.param("o", outputFilename, "", "file where to save output");
   arg.parseArgs(argc, argv);
@@ -89,6 +90,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "sim_mrslam");
 
   RosHandler rh(idRobot, nRobots, SIM_EXPERIMENT);
+  rh.setBaseFrame(baseFrame);
   rh.useOdom(true);
   rh.useLaser(true);
   rh.init();   //Wait for initial ground-truth position, odometry and laserScan
