@@ -99,6 +99,11 @@ RobotLaser* RosHandler::getLaser(){
   return rlaser;
 }
 
+float RosHandler::getLaserMaxRange(){
+  return _laserMaxRange;
+}
+
+
 void RosHandler::init(){
 
   if (_useOdom){
@@ -111,6 +116,7 @@ void RosHandler::init(){
   //Init scan
     sensor_msgs::LaserScan::ConstPtr lasermsg = ros::topic::waitForMessage<sensor_msgs::LaserScan>(_scanTopic);
     _laserscan = *lasermsg;
+    _laserMaxRange = _laserscan.range_max - 0.01;
 
     tf::StampedTransform laserTransform;
     try {

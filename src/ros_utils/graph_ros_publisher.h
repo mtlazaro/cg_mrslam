@@ -52,10 +52,11 @@ using namespace std;
 class GraphRosPublisher
 {
  public:
-  GraphRosPublisher(OptimizableGraph* graph, string mapFrame, string odomFrame);
+  GraphRosPublisher(OptimizableGraph* graph, string mapFrame, string odomFrame, SE2 pose = SE2());
 
   void publishGraph();
   void publishMapTransform(SE2 lastVertexEstimate, SE2 lastOdom);
+
 
  protected:
   ros::NodeHandle _nh;
@@ -64,6 +65,8 @@ class GraphRosPublisher
   ros::Publisher _publm;
   tf::TransformBroadcaster _broadcaster;
 
+
+  SE2 _initialGroundTruth;
   OptimizableGraph* _graph;
   string _mapFrame, _odomFrame;
 };

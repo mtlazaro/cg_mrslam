@@ -52,70 +52,73 @@ using namespace g2o;
 class RosHandler
 {
  public:
-  RosHandler(int idRobot, int nRobots, int typeExperiment);
-  
-  inline void useOdom(bool useOdom){_useOdom = useOdom;}
-  inline void useLaser(bool useLaser){_useLaser = useLaser;}
+	RosHandler(int idRobot, int nRobots, int typeExperiment);
+	
+	inline void useOdom(bool useOdom){_useOdom = useOdom;}
+	inline void useLaser(bool useLaser){_useLaser = useLaser;}
 
-  SE2 getOdom();
-  RobotLaser* getLaser();
-  
-  inline SE2 getGroundTruth(int robot){return _gtPoses[robot];}
-  inline ros::Time getTimeLastPing(int robot){return _timeLastPing[robot];}
+	SE2 getOdom();
+	RobotLaser* getLaser();
+	float getLaserMaxRange();
 
-  inline void setOdomTopic(std::string odomTopic) {_odomTopic = odomTopic;}
-  inline void setScanTopic(std::string scanTopic) {_scanTopic = scanTopic;}
+	
+	inline SE2 getGroundTruth(int robot){return _gtPoses[robot];}
+	inline ros::Time getTimeLastPing(int robot){return _timeLastPing[robot];}
 
-  inline void setBaseFrame(std::string baseFrameId) {_baseFrameId = baseFrameId;}
+	inline void setOdomTopic(std::string odomTopic) {_odomTopic = odomTopic;}
+	inline void setScanTopic(std::string scanTopic) {_scanTopic = scanTopic;}
 
-  void init();
-  void run();
+	inline void setBaseFrame(std::string baseFrameId) {_baseFrameId = baseFrameId;}
 
-  void publishSentMsg(RobotMessage* msg);
-  void publishReceivedMsg(RobotMessage* msg);
-  void publishPing(int idRobotFrom);
+	void init();
+	void run();
+
+	void publishSentMsg(RobotMessage* msg);
+	void publishReceivedMsg(RobotMessage* msg);
+	void publishPing(int idRobotFrom);
 
  protected:
-  void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
-  void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg);
-  void groundTruthCallback(const nav_msgs::Odometry::ConstPtr& msg, SE2 *gtpose);
-  void pingCallback(const cg_mrslam::Ping::ConstPtr& msg);
+	void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
+	void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg);
+	void groundTruthCallback(const nav_msgs::Odometry::ConstPtr& msg, SE2 *gtpose);
+	void pingCallback(const cg_mrslam::Ping::ConstPtr& msg);
 
-  void createDSlamMsg(RobotMessage* msg, cg_mrslam::SLAM& dslamMsg);
-  void createCondensedGraphMsg(CondensedGraphMessage* gmsg,  cg_mrslam::SLAM& dslamMsg);
-  void createComboMsg(ComboMessage* cmsg, cg_mrslam::SLAM& dslamMsg);
+	void createDSlamMsg(RobotMessage* msg, cg_mrslam::SLAM& dslamMsg);
+	void createCondensedGraphMsg(CondensedGraphMessage* gmsg,  cg_mrslam::SLAM& dslamMsg);
+	void createComboMsg(ComboMessage* cmsg, cg_mrslam::SLAM& dslamMsg);
 
-  ////////////////////
-  ros::NodeHandle _nh;
+	////////////////////
+	ros::NodeHandle _nh;
 
-  //Subscribers
-  ros::Subscriber _subOdom;
-  ros::Subscriber _subScan;
-  ros::Subscriber *_subgt;
-  ros::Subscriber _subPing;
+	//Subscribers
+	ros::Subscriber _subOdom;
+	ros::Subscriber _subScan;
+	ros::Subscriber *_subgt;
+	ros::Subscriber _subPing;
 
-  //Publishers
-  ros::Publisher _pubRecv;
-  ros::Publisher _pubSent;
-  ros::Publisher _pubPing;
+	//Publishers
+	ros::Publisher _pubRecv;
+	ros::Publisher _pubSent;
+	ros::Publisher _pubPing;
 
-  //Topics names
-  std::string _odomTopic;
-  std::string _scanTopic;
-  
-  int _idRobot;
-  int _nRobots;
-  int _typeExperiment;
-  bool _useOdom, _useLaser;
-  string _baseFrameId;
-  SE2 _trobotlaser;
+	//Topics names
+	std::string _odomTopic;
+	std::string _scanTopic;
+	
+	int _idRobot;
+	int _nRobots;
+	int _typeExperiment;
+	bool _useOdom, _useLaser;
+	string _baseFrameId;
+	SE2 _trobotlaser;
 
-  //ROS msgs
-  nav_msgs::Odometry _odom;
-  sensor_msgs::LaserScan _laserscan;
-  SE2 *_gtPoses;
+	//ROS msgs
+	nav_msgs::Odometry _odom;
+	sensor_msgs::LaserScan _laserscan;
+	SE2 *_gtPoses;
+	float _laserMaxRange;
 
-  ros::Time *_timeLastPing;
+	ros::Time *_timeLastPing;
 
 };
 
