@@ -43,27 +43,11 @@ public:
 	void computeMap ();
 
 	void setResolution (const float resolution);
-	void setThreshold (const float threshold);
-	void setRows (const float rows);
-	void setCols (const float cols);
-	void setMaxRange (const float maxRange);
-	void setUsableRange (const float usableRange);
-	void setGain (const float gain);
-	void setSquareSize (const float squareSize);
-	void setAngle (const float angle);
-	void setFreeThreshold (const float freeThrehsold);
-
-
 
 	float getResolution ();
 	float getThreshold ();
 	float getRows ();
 	float getCols ();
-	float getMaxRange ();
-	float getUsableRange ();
-	float getGain ();
-	float getSquareSize ();
-	float getAngle ();
 	float getFreeThreshold ();
 
 	Vector2f getMapCenter();
