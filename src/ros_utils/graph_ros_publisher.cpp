@@ -28,10 +28,12 @@
 
 #include "graph_ros_publisher.h"
 
-GraphRosPublisher::GraphRosPublisher(OptimizableGraph* graph, string mapFrame, string odomFrame){
+GraphRosPublisher::GraphRosPublisher(OptimizableGraph* graph, string mapFrame, string odomFrame, SE2 pose){
   _graph = graph;
   _mapFrame = mapFrame;
   _odomFrame = odomFrame;
+
+  _initialGroundTruth = pose;
 
   _pubtj = _nh.advertise<geometry_msgs::PoseArray>("trajectory", 1);
   _publm = _nh.advertise<sensor_msgs::PointCloud>("lasermap", 1);
@@ -45,13 +47,25 @@ void GraphRosPublisher::publishGraph(){
   sensor_msgs::PointCloud pcloud;
   traj.poses.resize(_graph->vertices().size());
   pcloud.points.clear();
+
+  double angle = -M_PI_2 + _initialGroundTruth.rotation().angle();
+
+  SE2 rotation(0,0,angle);
+
   int i = 0;
   for (OptimizableGraph::VertexIDMap::iterator it=_graph->vertices().begin(); it!=_graph->vertices().end(); ++it) {
     VertexSE2* v = (VertexSE2*) (it->second);
-    traj.poses[i].position.x = v->estimate().translation().x();
-    traj.poses[i].position.y = v->estimate().translation().y();
+
+    //The pose is corrected by "subtracting" the initial position (such that the initial pose coincides with the origin) and compensating for the M_PI_2.
+    SE2 correctedPose;
+
+    correctedPose = _initialGroundTruth.inverse()*v->estimate();
+    correctedPose = rotation*correctedPose;
+
+    traj.poses[i].position.x = correctedPose.translation().x();
+    traj.poses[i].position.y = correctedPose.translation().y();
     traj.poses[i].position.z = 0;
-    traj.poses[i].orientation = tf::createQuaternionMsgFromYaw(v->estimate().rotation().angle());
+    traj.poses[i].orientation = tf::createQuaternionMsgFromYaw(correctedPose.rotation().angle());
 
     RobotLaser *laser = dynamic_cast<RobotLaser*>(v->userData());
     if (laser){
@@ -63,12 +77,12 @@ void GraphRosPublisher::publishGraph(){
 	  
       size_t s= 0;
       while ( s<wscan.size()){
-	geometry_msgs::Point32 point;
-	point.x = wscan[s].x();
-	point.y = wscan[s].y();
-	pcloud.points.push_back(point);
-	
-	s = s+10;
+      	geometry_msgs::Point32 point;
+      	point.x = wscan[s].x();
+      	point.y = wscan[s].y();
+      	pcloud.points.push_back(point);
+      	
+      	s = s+10;
       }
     }
     i++;
@@ -101,3 +115,4 @@ void GraphRosPublisher::publishMapTransform(SE2 lastVertexEstimate, SE2 lastOdom
 
 
 }
+

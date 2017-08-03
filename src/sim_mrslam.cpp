@@ -36,6 +36,9 @@
 #include "ros_utils/ros_handler.h"
 #include "ros_utils/graph_ros_publisher.h"
 
+#include "map_creation/graph2occupancy.h"
+#include "map_creation/occupancy_map_server.h"
+
 using namespace g2o;
 
 //Log files
@@ -66,6 +69,9 @@ int main(int argc, char **argv)
   std::string odometryTopic, scanTopic, odomFrame, mapFrame, baseFrame;
   bool publishTransform;
 
+  float localizationAngularUpdate, localizationLinearUpdate;
+  float maxRange, usableRange;
+
   arg.param("resolution",  resolution, 0.025, "resolution of the matching grid");
   arg.param("maxScore",    maxScore, 0.15,     "score of the matcher, the higher the less matches");
   arg.param("kernelRadius", kernelRadius, 0.2,  "radius of the convolution kernel");
@@ -74,6 +80,8 @@ int main(int argc, char **argv)
   arg.param("inlierThreshold",  inlierThreshold, 2.,   "inlier threshold");
   arg.param("idRobot", idRobot, 0, "robot identifier" );
   arg.param("nRobots", nRobots, 1, "number of robots" );
+  arg.param("angularUpdate", localizationAngularUpdate, M_PI_4, "angular rotation interval for updating the graph, in radians");
+  arg.param("linearUpdate", localizationLinearUpdate, 0.25, "linear translation interval for updating the graph, in meters");
   arg.param("maxScoreMR",    maxScoreMR, 0.15,  "score of the intra-robot matcher, the higher the less matches");
   arg.param("minInliersMR",    minInliersMR, 5,     "min inliers for the intra-robot loop closure");
   arg.param("windowMRLoopClosure",  windowMRLoopClosure, 10,   "sliding window for the intra-robot loop closures");
@@ -87,6 +95,17 @@ int main(int argc, char **argv)
   arg.param("o", outputFilename, "", "file where to save output");
   arg.parseArgs(argc, argv);
 
+  //map parameters
+  float mapResolution = 0.05;
+  float occupiedThrehsold = 0.65; 
+  float rows = 0;
+  float cols = 0;
+  float gain = 3.0;
+  float squareSize = 0;
+  float angle = 0.0;
+  float freeThrehsold = 0.196;
+
+
   ros::init(argc, argv, "sim_mrslam");
 
   RosHandler rh(idRobot, nRobots, SIM_EXPERIMENT);
@@ -95,6 +114,9 @@ int main(int argc, char **argv)
   rh.useLaser(true);
   rh.init();   //Wait for initial ground-truth position, odometry and laserScan
   rh.run();
+
+  maxRange = rh.getLaserMaxRange();
+  usableRange = maxRange;
   
   for (int r = 0; r<nRobots; r++){
     std::cerr << "Ground Truth robot " << r << ": " << rh.getGroundTruth(r).translation().x() << " " << rh.getGroundTruth(r).translation().y() << " " << rh.getGroundTruth(r).rotation().angle() << std::endl;
@@ -125,6 +147,14 @@ int main(int argc, char **argv)
   gslam.init(resolution, kernelRadius, windowLoopClosure, maxScore, inlierThreshold, minInliers);
   gslam.setInterRobotClosureParams(maxScoreMR, minInliersMR, windowMRLoopClosure);
 
+  //Map building
+  cv::Mat occupancyMap;
+  Eigen::Vector2f mapCenter;
+  
+  Graph2occupancy mapCreator(gslam.graph(), &occupancyMap, currEst, mapResolution, occupiedThrehsold, rows, cols, maxRange, usableRange, gain, squareSize, angle, freeThrehsold);
+  OccupancyMapServer mapServer(&occupancyMap, idRobot, SIM_EXPERIMENT, mapFrame, occupiedThrehsold, freeThrehsold);
+
+
   RobotLaser* rlaser = rh.getLaser();
 
   gslam.setInitialData(currEst, odomPosk_1, rlaser);
@@ -134,7 +164,7 @@ int main(int argc, char **argv)
     gtgraph.setInitialData(currEst, rlaser);
   }
   
-  GraphRosPublisher graphPublisher(gslam.graph(), mapFrame, odomFrame);
+  GraphRosPublisher graphPublisher(gslam.graph(), mapFrame, odomFrame, currEst);
   if (publishTransform)
     graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
 
@@ -149,6 +179,16 @@ int main(int argc, char **argv)
   GraphComm gc(&gslam, idRobot, nRobots, base_addr, SIM_EXPERIMENT);
   gc.init_network(&rh);
 
+
+  mapCreator.computeMap();
+  
+  mapCenter = mapCreator.getMapCenter();
+  mapServer.setOffset(mapCenter);
+  mapServer.setResolution(mapResolution);
+  mapServer.publishMapMetaData();
+  mapServer.publishMap();
+
+
   ros::Rate loop_rate(10);
   while (ros::ok()){
     ros::spinOnce();
@@ -159,8 +199,8 @@ int main(int argc, char **argv)
 
     odomPosk_1 = odomPosk;
 
-    if((distanceSE2(gslam.lastVertex()->estimate(), currEst) > 0.25) || 
-       (fabs(gslam.lastVertex()->estimate().rotation().angle()-currEst.rotation().angle()) > M_PI_4)){
+    if((distanceSE2(gslam.lastVertex()->estimate(), currEst) > localizationLinearUpdate) || 
+       (fabs(gslam.lastVertex()->estimate().rotation().angle()-currEst.rotation().angle()) > localizationAngularUpdate)){
       //Add new data
       RobotLaser* laseri = rh.getLaser();
 
@@ -183,24 +223,33 @@ int main(int argc, char **argv)
       gslam.saveGraph(buf);
  
       if (logData){
-	gtgraph.addData(rh.getGroundTruth(idRobot), laseri);
-	timesfile << gslam.graph()->edges().size() << "\t" << ros::Time::now() << "\t" << secs*1000.0 << endl;
-	char buf2[100];
-	sprintf(buf2, "gt-robot-%i-%s", idRobot, outputFilename.c_str());
-	gtgraph.saveGraph(buf2);
+      	gtgraph.addData(rh.getGroundTruth(idRobot), laseri);
+      	timesfile << gslam.graph()->edges().size() << "\t" << ros::Time::now() << "\t" << secs*1000.0 << endl;
+      	char buf2[100];
+      	sprintf(buf2, "gt-robot-%i-%s", idRobot, outputFilename.c_str());
+      	gtgraph.saveGraph(buf2);
       }
 
       //Publish graph to visualize it on Rviz
       graphPublisher.publishGraph();
       //Publish map transform with corrected estimate
       if (publishTransform)
-	graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
-      
-    }else {
+	     graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
+
+        mapCreator.computeMap();
+        mapCenter = mapCreator.getMapCenter();
+        mapServer.setOffset(mapCenter);
+
+    }
+
+    else {
       //Publish map transform with last corrected estimate + odometry drift
       if (publishTransform)
-	graphPublisher.publishMapTransform(currEst, odomPosk_1);
+	     graphPublisher.publishMapTransform(currEst, odomPosk_1);
     }
+
+    mapServer.publishMapMetaData();
+    mapServer.publishMap();
     
     loop_rate.sleep();
   }
