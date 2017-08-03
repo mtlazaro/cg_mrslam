@@ -269,7 +269,8 @@ void CharGrid::greedySearch(std::vector<MatcherResult>& mresvec,
 		    {
 		      Vector2i ip=*_ip+offset;
 		      _ip++;
-		      idsum+=_grid.cell(ip);
+		      if (_grid.isInside(ip))
+			idsum+=_grid.cell(ip);
 		    }
 		  float dsum = (float)idsum * (float)ikscale;
 		  dsum = k ? (dsum / (double) k) : maxScore+1;
@@ -425,7 +426,8 @@ void CharGrid::countPoints(Eigen::Vector2f lowerLeftF, Eigen::Vector2f upperRigh
   for(int i=lowerLeft.x(); i<upperRight.x(); i++){
       for(int j=lowerLeft.y(); j<upperRight.y(); j++){
 	Vector2i offset(i,j);
-	isum+=_grid.cell(offset);
+	if (_grid.isInside(offset))
+	    isum+=_grid.cell(offset);
       }
   }
   
@@ -444,8 +446,10 @@ void CharGrid::searchNonMatchedPoints(const Vector2dVector& points, Vector2dVect
   float ikscale = 1./(float)(_kscale);
   for(size_t i = 0; i < points.size(); i++){
     Vector2i gpoint  = _grid.world2grid(Vector2f(points[i].x(), points[i].y()));
-    double value = (float) _grid.cell(gpoint) * ikscale;
-    if (value > maxScore)
-      nonmatchedpoints.push_back(points[i]);
+    if (_grid.isInside(gpoint)) {
+      double value = (float) _grid.cell(gpoint) * ikscale;
+      if (value > maxScore)
+	nonmatchedpoints.push_back(points[i]);
+    }
   }
 }
