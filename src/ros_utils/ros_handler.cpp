@@ -145,20 +145,20 @@ void RosHandler::init(){
 
 void RosHandler::run(){
   if (_useOdom) //Subscribe Odom
-    _subOdom = _nh.subscribe<nav_msgs::Odometry>(_odomTopic, 1000, &RosHandler::odomCallback, this);
+    _subOdom = _nh.subscribe<nav_msgs::Odometry>(_odomTopic, 1, &RosHandler::odomCallback, this);
     
   if (_useLaser) //Subscribe Laser
-    _subScan = _nh.subscribe<sensor_msgs::LaserScan>(_scanTopic, 1000,  &RosHandler::scanCallback, this);
+    _subScan = _nh.subscribe<sensor_msgs::LaserScan>(_scanTopic, 1,  &RosHandler::scanCallback, this);
 
   if (_typeExperiment == BAG_EXPERIMENT){
     //subscribe pings
-    _subPing = _nh.subscribe<cg_mrslam::Ping>("ping_msgs", 1000, &RosHandler::pingCallback, this);
+    _subPing = _nh.subscribe<cg_mrslam::Ping>("ping_msgs", 1, &RosHandler::pingCallback, this);
   } else if (_typeExperiment == SIM_EXPERIMENT){
     //subscribe ground truth
     for (int r = 0; r < _nRobots; r++){
       std::stringstream nametopic;
       nametopic << "/robot_" << r << "/base_pose_ground_truth";
-      _subgt[r] = _nh.subscribe<nav_msgs::Odometry>(nametopic.str(), 1000, boost::bind(&RosHandler::groundTruthCallback, this, _1, &_gtPoses[r]));
+      _subgt[r] = _nh.subscribe<nav_msgs::Odometry>(nametopic.str(), 1, boost::bind(&RosHandler::groundTruthCallback, this, _1, &_gtPoses[r]));
     }
   } else if (_typeExperiment == REAL_EXPERIMENT){
     //publish ping, sent and received messages
