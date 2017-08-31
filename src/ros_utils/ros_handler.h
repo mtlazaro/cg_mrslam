@@ -59,7 +59,7 @@ class RosHandler
 
   SE2 getOdom();
   RobotLaser* getLaser();
-  
+  inline float getLaserMaxRange() {return _laserMaxRange;}
   inline SE2 getGroundTruth(int robot){return _gtPoses[robot];}
   inline ros::Time getTimeLastPing(int robot){return _timeLastPing[robot];}
 
@@ -113,6 +113,7 @@ class RosHandler
   //ROS msgs
   nav_msgs::Odometry _odom;
   sensor_msgs::LaserScan _laserscan;
+  float _laserMaxRange;
   SE2 *_gtPoses;
 
   ros::Time *_timeLastPing;

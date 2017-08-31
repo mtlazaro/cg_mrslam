@@ -36,6 +36,10 @@
 #include "ros_utils/ros_handler.h"
 #include "ros_utils/graph_ros_publisher.h"
 
+#include "ros_map_publisher/graph2occupancy.h"
+#include "ros_map_publisher/occupancy_map_server.h"
+
+
 using namespace g2o;
 
 int main(int argc, char **argv)
@@ -55,6 +59,9 @@ int main(int argc, char **argv)
   std::vector<double> initialPose;
   initialPose.clear();
   bool publishTransform;
+
+  float localizationAngularUpdate, localizationLinearUpdate;
+  float maxRange, usableRange;
   
   arg.param("resolution",  resolution, 0.025, "resolution of the matching grid");
   arg.param("maxScore",    maxScore, 0.15,     "score of the matcher, the higher the less matches");
@@ -64,6 +71,8 @@ int main(int argc, char **argv)
   arg.param("inlierThreshold",  inlierThreshold, 2.,   "inlier threshold");
   arg.param("idRobot", idRobot, 0, "robot identifier" );
   arg.param("nRobots", nRobots, 1, "number of robots" );
+  arg.param("angularUpdate", localizationAngularUpdate, M_PI_4, "angular rotation interval for updating the graph, in radians");
+  arg.param("linearUpdate", localizationLinearUpdate, 0.25, "linear translation interval for updating the graph, in meters");
   arg.param("maxScoreMR",    maxScoreMR, 0.15,  "score of the intra-robot matcher, the higher the less matches");
   arg.param("minInliersMR",    minInliersMR, 5,     "min inliers for the intra-robot loop closure");
   arg.param("windowMRLoopClosure",  windowMRLoopClosure, 10,   "sliding window for the intra-robot loop closures");
@@ -77,6 +86,17 @@ int main(int argc, char **argv)
   arg.param("o", outputFilename, "", "file where to save output");
   arg.parseArgs(argc, argv);
 
+  //map parameters
+  float mapResolution = 0.05;
+  float occupiedThrehsold = 0.65; 
+  float rows = 0;
+  float cols = 0;
+  float gain = 3.0;
+  float squareSize = 0;
+  float angle = M_PI_2;
+  float freeThrehsold = 0.196;
+
+
   ros::init(argc, argv, "real_mrslam");
 
   RosHandler rh(idRobot, nRobots, REAL_EXPERIMENT);
@@ -88,6 +108,10 @@ int main(int argc, char **argv)
 
   rh.init();   //Wait for initial odometry and laserScan
   rh.run();
+
+  maxRange = rh.getLaserMaxRange();
+  usableRange = maxRange;
+  
 
   //For estimation
   SE2 currEst;
@@ -114,6 +138,16 @@ int main(int argc, char **argv)
   gslam.init(resolution, kernelRadius, windowLoopClosure, maxScore, inlierThreshold, minInliers);
   gslam.setInterRobotClosureParams(maxScoreMR, minInliersMR, windowMRLoopClosure);
 
+
+  //Map building
+  cv::Mat occupancyMap;
+  Eigen::Vector2f mapCenter;
+  
+  Graph2occupancy mapCreator(gslam.graph(), &occupancyMap, currEst, mapResolution, occupiedThrehsold, rows, cols, maxRange, usableRange, gain, squareSize, angle, freeThrehsold);
+  OccupancyMapServer mapServer(&occupancyMap, idRobot, SIM_EXPERIMENT, mapFrame, occupiedThrehsold, freeThrehsold);
+
+
+
   RobotLaser* rlaser = rh.getLaser();
 
   gslam.setInitialData(currEst, rlaser);
@@ -133,6 +167,15 @@ int main(int argc, char **argv)
   GraphComm gc(&gslam, idRobot, nRobots, base_addr, REAL_EXPERIMENT);
   gc.init_network(&rh);
 
+  mapCreator.computeMap();
+  
+  mapCenter = mapCreator.getMapCenter();
+  mapServer.setOffset(mapCenter);
+  mapServer.setResolution(mapResolution);
+  mapServer.publishMapMetaData();
+  mapServer.publishMap();
+
+
   ros::Rate loop_rate(10);
 
   while (ros::ok()){
@@ -144,8 +187,8 @@ int main(int argc, char **argv)
 
     odomPosk_1 = odomPosk;
 
-    if((distanceSE2(gslam.lastVertex()->estimate(), currEst) > 0.25) || 
-       (fabs(gslam.lastVertex()->estimate().rotation().angle()-currEst.rotation().angle()) > M_PI_4)){
+    if((distanceSE2(gslam.lastVertex()->estimate(), currEst) > localizationLinearUpdate) || 
+       (fabs(gslam.lastVertex()->estimate().rotation().angle()-currEst.rotation().angle()) > localizationAngularUpdate)){
       //Add new data
       RobotLaser* laseri = rh.getLaser();
 
@@ -166,11 +209,19 @@ int main(int argc, char **argv)
       if (publishTransform)
 	graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
       
+        mapCreator.computeMap();
+        mapCenter = mapCreator.getMapCenter();
+        mapServer.setOffset(mapCenter);
+
+
     }else {
       //Publish map transform with last corrected estimate + odometry drift
       if (publishTransform)
 	graphPublisher.publishMapTransform(currEst, odomPosk_1);
     }
+
+    mapServer.publishMapMetaData();
+    mapServer.publishMap();
     
     loop_rate.sleep();
   }

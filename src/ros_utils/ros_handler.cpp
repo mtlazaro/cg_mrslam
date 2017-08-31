@@ -80,8 +80,7 @@ SE2 RosHandler::getOdom(){
 
 RobotLaser* RosHandler::getLaser(){
 
-  //LaserParameters lparams(0, _laserscan.ranges.size(), _laserscan.angle_min,  _laserscan.angle_increment, _laserscan.range_max, 0.1, 0);
-  LaserParameters lparams(0, _laserscan.ranges.size(), _laserscan.angle_min,  _laserscan.angle_increment, min(8.0f , _laserscan.range_max), 0.1, 0);
+  LaserParameters lparams(0, _laserscan.ranges.size(), _laserscan.angle_min,  _laserscan.angle_increment, _laserscan.range_max, 0.1, 0);
   lparams.laserPose = _trobotlaser;
 
   RobotLaser* rlaser = new RobotLaser;
@@ -111,6 +110,7 @@ void RosHandler::init(){
   //Init scan
     sensor_msgs::LaserScan::ConstPtr lasermsg = ros::topic::waitForMessage<sensor_msgs::LaserScan>(_scanTopic);
     _laserscan = *lasermsg;
+    _laserMaxRange = _laserscan.range_max;
 
     tf::StampedTransform laserTransform;
     try {
