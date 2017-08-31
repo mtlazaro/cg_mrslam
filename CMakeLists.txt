@@ -87,7 +87,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS src
-  LIBRARIES cg_mrslam_matcher_library cg_mrslam_slam_library cg_mrslam_ros_utils_library cg_mrslam_library
+  LIBRARIES cg_mrslam_matcher_library cg_mrslam_slam_library cg_mrslam_ros_utils_library cg_mrslam_ros_map_publisher_library cg_mrslam_library
   CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 )
@@ -133,6 +133,9 @@ INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
 FIND_PACKAGE(SuiteSparse REQUIRED)
 INCLUDE_DIRECTORIES(${CSPARSE_INCLUDE_DIR})
 
+FIND_PACKAGE(OpenCV)
+INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
+
 # Find g2o
 FIND_PACKAGE(G2O REQUIRED)
 IF(G2O_FOUND)
@@ -159,8 +162,10 @@ target_link_libraries(srslam
   cg_mrslam_slam_library
   cg_mrslam_ros_utils_library
   cg_mrslam_library
+  cg_mrslam_ros_map_publisher_library
   ${catkin_LIBRARIES}  
   ${CSPARSE_LIBRARY}
+  ${OpenCV_LIBS} 
   ${G2O_TYPES_DATA}
   ${G2O_SOLVER_CSPARSE_EXTENSION}
   ${G2O_SOLVER_CSPARSE}
@@ -179,8 +184,10 @@ target_link_libraries(sim_mrslam
   cg_mrslam_ros_utils_library
   cg_mrslam_condensed_graph_library
   cg_mrslam_library
+  cg_mrslam_ros_map_publisher_library
   ${catkin_LIBRARIES}  
   ${CSPARSE_LIBRARY}
+  ${OpenCV_LIBS}    
   ${G2O_TYPES_DATA}
   ${G2O_SOLVER_CSPARSE_EXTENSION}
   ${G2O_SOLVER_CSPARSE}
@@ -199,8 +206,10 @@ target_link_libraries(real_mrslam
   cg_mrslam_ros_utils_library
   cg_mrslam_condensed_graph_library
   cg_mrslam_library
+  cg_mrslam_ros_map_publisher_library
   ${catkin_LIBRARIES}  
   ${CSPARSE_LIBRARY}
+  ${OpenCV_LIBS} 
   ${G2O_TYPES_DATA}
   ${G2O_SOLVER_CSPARSE_EXTENSION}
   ${G2O_SOLVER_CSPARSE}
@@ -219,8 +228,10 @@ target_link_libraries(bag_mrslam
   cg_mrslam_ros_utils_library
   cg_mrslam_condensed_graph_library
   cg_mrslam_library
+  cg_mrslam_ros_map_publisher_library
   ${catkin_LIBRARIES}  
   ${CSPARSE_LIBRARY}
+  ${OpenCV_LIBS} 
   ${G2O_TYPES_DATA}
   ${G2O_SOLVER_CSPARSE_EXTENSION}
   ${G2O_SOLVER_CSPARSE}
