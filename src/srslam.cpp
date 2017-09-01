@@ -95,13 +95,13 @@ int main(int argc, char **argv)
 
   //map parameters
   float mapResolution = 0.05;
-  float occupiedThrehsold = 0.65; 
+  float occupiedThreshold = 0.65; 
   float rows = 0;
   float cols = 0;
   float gain = 3.0;
   float squareSize = 0;
   float angle = M_PI_2;
-  float freeThrehsold = 0.196;
+  float freeThreshold = 0.196;
 
 
   ros::init(argc, argv, "srslam");
@@ -136,8 +136,8 @@ int main(int argc, char **argv)
   cv::Mat occupancyMap;
   Eigen::Vector2f mapCenter;
   
-  Graph2occupancy mapCreator(gslam.graph(), &occupancyMap, currEst, mapResolution, occupiedThrehsold, rows, cols, maxRange, usableRange, gain, squareSize, angle, freeThrehsold);
-  OccupancyMapServer mapServer(&occupancyMap, idRobot, SIM_EXPERIMENT, mapFrame, occupiedThrehsold, freeThrehsold);
+  Graph2occupancy mapCreator(gslam.graph(), &occupancyMap, currEst, mapResolution, occupiedThreshold, rows, cols, maxRange, usableRange, gain, squareSize, angle, freeThreshold);
+  OccupancyMapServer mapServer(&occupancyMap, idRobot, SIM_EXPERIMENT, mapFrame, occupiedThreshold, freeThreshold);
 
 
   RobotLaser* rlaser = rh.getLaser();
