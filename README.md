@@ -84,7 +84,7 @@ Two possible visualizations can be done online using RViz. The raw graph created
 
     $ rosrun cg_mrslam sim_mrslam -idRobot 0 -nRobots 2 -scanTopic base_scan -mapFrame /robot_0/map -odomFrame /robot_0/odom -publishMap -publishGraph -o testmrslam.g2o __ns:=robot_0
 
-Then, launch RViz (`rosrun rviz rviz`) and select /robot_0/map as the Fixed Frame in Global options. The nodes of the graph are published as a PoseArray message on the /robot_0/trajectory topic while their associated laserscans are published as a PoinCloud on the /robot_0/lasermap topic. See the following screenshots as example of visualization:
+Then, launch RViz (`rosrun rviz rviz`) and select /robot_0/map as the Fixed Frame in Global options. The nodes of the graph are published as a PoseArray message on the /robot_0/trajectory topic while their associated laserscans are published as a PointCloud on the /robot_0/lasermap topic. See the following screenshots as example of visualization:
 
 ![cg_mrslam](/bagfiles/cg_mrslam.png)
 
