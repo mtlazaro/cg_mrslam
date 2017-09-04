@@ -53,6 +53,7 @@ int main(int argc, char **argv)
   double inlierThreshold;
   int idRobot;
   int nRobots;
+  std::string base_addr;
   std::string outputFilename;
   std::string odometryTopic, scanTopic, odomFrame, mapFrame, baseFrame;
   std::vector<double> initialPose;
@@ -70,6 +71,7 @@ int main(int argc, char **argv)
   arg.param("inlierThreshold",  inlierThreshold, 2.,   "inlier threshold");
   arg.param("idRobot", idRobot, 0, "robot identifier" );
   arg.param("nRobots", nRobots, 1, "number of robots" );
+  arg.param("baseAddr", base_addr, "192.168.0.", "base IP address of the MR system" );
   arg.param("angularUpdate", localizationAngularUpdate, M_PI_4, "angular rotation interval for updating the graph, in radians");
   arg.param("linearUpdate", localizationLinearUpdate, 0.25, "linear translation interval for updating the graph, in meters");
   arg.param("maxScoreMR",    maxScoreMR, 0.15,  "score of the intra-robot matcher, the higher the less matches");
@@ -174,7 +176,6 @@ int main(int argc, char **argv)
 
   ////////////////////
   //Setting up network
-  std::string base_addr = "192.168.0.";
   GraphComm gc(&gslam, idRobot, nRobots, base_addr, REAL_EXPERIMENT);
   gc.init_network(&rh);
 
