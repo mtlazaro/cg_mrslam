@@ -67,7 +67,7 @@ int main(int argc, char **argv)
   int nRobots;
   std::string outputFilename;
   std::string odometryTopic, scanTopic, odomFrame, mapFrame, baseFrame;
-  bool publishTransform;
+  bool publishMap, publishGraph;
 
   float localizationAngularUpdate, localizationLinearUpdate;
   float maxRange, usableRange;
@@ -91,7 +91,8 @@ int main(int argc, char **argv)
   arg.param("odomFrame", odomFrame, "odom", "odom frame");
   arg.param("mapFrame", mapFrame, "map", "map frame");
   arg.param("baseFrame", baseFrame, "/base_link", "base robot frame");
-  arg.param("publishTransform", publishTransform, false, "Publish map transform");
+  arg.param("publishMap", publishMap, false, "Publish map");
+  arg.param("publishGraph", publishGraph, false, "Publish graph");
   arg.param("o", outputFilename, "", "file where to save output");
   arg.parseArgs(argc, argv);
 
@@ -147,14 +148,6 @@ int main(int argc, char **argv)
   gslam.init(resolution, kernelRadius, windowLoopClosure, maxScore, inlierThreshold, minInliers);
   gslam.setInterRobotClosureParams(maxScoreMR, minInliersMR, windowMRLoopClosure);
 
-  //Map building
-  cv::Mat occupancyMap;
-  Eigen::Vector2f mapCenter;
-  
-  Graph2occupancy mapCreator(gslam.graph(), &occupancyMap, currEst, mapResolution, occupiedThreshold, rows, cols, maxRange, usableRange, gain, squareSize, angle, freeThreshold);
-  OccupancyMapServer mapServer(&occupancyMap, idRobot, SIM_EXPERIMENT, mapFrame, occupiedThreshold, freeThreshold);
-
-
   RobotLaser* rlaser = rh.getLaser();
 
   gslam.setInitialData(currEst, odomPosk_1, rlaser);
@@ -164,10 +157,31 @@ int main(int argc, char **argv)
     gtgraph.setInitialData(currEst, rlaser);
   }
   
+  cv::Mat occupancyMap;
+  Eigen::Vector2f mapCenter;
+  
+  //Map building
+  Graph2occupancy mapCreator(gslam.graph(), &occupancyMap, currEst, mapResolution, occupiedThreshold, rows, cols, maxRange, usableRange, gain, squareSize, angle, freeThreshold);
+  OccupancyMapServer mapServer(&occupancyMap, idRobot, SIM_EXPERIMENT, mapFrame, occupiedThreshold, freeThreshold);
   GraphRosPublisher graphPublisher(gslam.graph(), mapFrame, odomFrame);
-  if (publishTransform)
+
+  if (publishMap){
+    mapCreator.computeMap();
+    
+    mapCenter = mapCreator.getMapCenter();
+    mapServer.setOffset(mapCenter);
+    mapServer.setResolution(mapResolution);
+    mapServer.publishMapMetaData();
+    mapServer.publishMap();
+  }
+  
+  if (publishGraph)
+    graphPublisher.publishGraph();
+
+  if (publishMap || publishGraph)
     graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
 
+  //Saving g2o file
   char buf[100];
   sprintf(buf, "robot-%i-%s", idRobot, outputFilename.c_str());
   ofstream ofmap(buf);
@@ -178,16 +192,6 @@ int main(int argc, char **argv)
   std::string base_addr = "127.0.0.";
   GraphComm gc(&gslam, idRobot, nRobots, base_addr, SIM_EXPERIMENT);
   gc.init_network(&rh);
-
-
-  mapCreator.computeMap();
-  
-  mapCenter = mapCreator.getMapCenter();
-  mapServer.setOffset(mapCenter);
-  mapServer.setResolution(mapResolution);
-  mapServer.publishMapMetaData();
-  mapServer.publishMap();
-
 
   ros::Rate loop_rate(10);
   while (ros::ok()){
@@ -230,26 +234,33 @@ int main(int argc, char **argv)
       	gtgraph.saveGraph(buf2);
       }
 
-      //Publish graph to visualize it on Rviz
-      graphPublisher.publishGraph();
-      //Publish map transform with corrected estimate
-      if (publishTransform)
-	     graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
+      if (publishMap || publishGraph)
+	graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
 
+      //Publish graph to visualize it on Rviz
+      if (publishGraph)
+	graphPublisher.publishGraph();
+      
+      if (publishMap){
+	//Update map
         mapCreator.computeMap();
         mapCenter = mapCreator.getMapCenter();
         mapServer.setOffset(mapCenter);
+      }
 
     }
 
     else {
       //Publish map transform with last corrected estimate + odometry drift
-      if (publishTransform)
-	     graphPublisher.publishMapTransform(currEst, odomPosk_1);
+      if (publishMap || publishGraph)
+	graphPublisher.publishMapTransform(currEst, odomPosk_1);
     }
 
-    mapServer.publishMapMetaData();
-    mapServer.publishMap();
+    //Publish map
+    if (publishMap){
+      mapServer.publishMapMetaData();
+      mapServer.publishMap();
+    }
     
     loop_rate.sleep();
   }
