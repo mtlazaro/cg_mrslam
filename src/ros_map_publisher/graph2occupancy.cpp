@@ -154,7 +154,7 @@ void Graph2occupancy::computeMap(){
     Eigen::Vector2i originMap = _map.world2map(Eigen::Vector2f(initialPose.translation().x(),
 							       initialPose.translation().y()));
     origin = Eigen::Vector2f(((-_resolution * originMap.y())+initialPose.translation().y()),
-			     (-_resolution * (_mapImage->rows-originMap.x()))+initialPose.translation().x());
+			     -(_resolution * (_mapImage->rows-originMap.x()) +initialPose.translation().x()));
     
   }
 
