@@ -50,8 +50,8 @@ void GraphSLAM::init(double resolution, double kernelRadius, int windowLoopClosu
   //Init graph
   SlamLinearSolver* linearSolver = new SlamLinearSolver();
   linearSolver->setBlockOrdering(false);
-  SlamBlockSolver* blockSolver = new SlamBlockSolver(linearSolver);
-  OptimizationAlgorithmGaussNewton* solver = new OptimizationAlgorithmGaussNewton(blockSolver);
+  SlamBlockSolver* blockSolver = new SlamBlockSolver(std::unique_ptr<SlamLinearSolver>(linearSolver));
+  OptimizationAlgorithmGaussNewton* solver = new OptimizationAlgorithmGaussNewton(std::unique_ptr<Solver>(blockSolver));
   _graph->setAlgorithm(solver);
   _graph->setVerbose(false);
 
