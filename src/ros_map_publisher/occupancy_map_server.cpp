@@ -91,9 +91,10 @@ void OccupancyMapServer::publishMap() {
   _gridMsg.info.origin.position.x = _mapOffset.x();
   _gridMsg.info.origin.position.y = _mapOffset.y();
 
-  _gridMsg.info.map_load_time = ros::Time::now();
+  //_gridMsg.info.map_load_time = ros::Time::now();
   _gridMsg.info.resolution = _mapResolution;
 
+  _gridMsg.header.stamp = ros::Time::now();
   _pubOccupGrid.publish(_gridMsg);
 
 
