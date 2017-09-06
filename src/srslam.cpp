@@ -65,7 +65,7 @@ int main(int argc, char **argv)
   int idRobot;
   int nRobots;
   std::string outputFilename;
-  std::string odometryTopic, scanTopic, odomFrame, mapFrame, baseFrame;
+  std::string odometryTopic, scanTopic, mapTopic, odomFrame, mapFrame, baseFrame;
   std::vector<double> initialPose;
   initialPose.clear();
   bool publishMap, publishGraph;
@@ -85,6 +85,7 @@ int main(int argc, char **argv)
   arg.param("linearUpdate", localizationLinearUpdate, 0.25, "linear translation interval for updating the graph, in meters");
   arg.param("odometryTopic", odometryTopic, "odom", "odometry ROS topic");
   arg.param("scanTopic", scanTopic, "scan", "scan ROS topic");
+  arg.param("mapTopic", mapTopic, "map", "map ROS topic");
   arg.param("odomFrame", odomFrame, "odom", "odom frame");
   arg.param("mapFrame", mapFrame, "map", "map frame");
   arg.param("baseFrame", baseFrame, "/base_link", "base robot frame");
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
 
   //Map building
   Graph2occupancy mapCreator(gslam.graph(), &occupancyMap, currEst, mapResolution, occupiedThreshold, rows, cols, maxRange, usableRange, gain, squareSize, angle, freeThreshold);
-  OccupancyMapServer mapServer(&occupancyMap, idRobot, SIM_EXPERIMENT, mapFrame, occupiedThreshold, freeThreshold);
+  OccupancyMapServer mapServer(&occupancyMap, idRobot, SIM_EXPERIMENT, mapFrame, mapTopic, occupiedThreshold, freeThreshold);
   GraphRosPublisher graphPublisher(gslam.graph(), mapFrame, odomFrame);
   
   if (publishMap){

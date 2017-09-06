@@ -75,7 +75,9 @@ void GraphRosPublisher::publishGraph(){
   }
   
   traj.header.frame_id = _mapFrame;
+  traj.header.stamp = ros::Time::now();
   pcloud.header.frame_id = traj.header.frame_id;
+  pcloud.header.stamp = ros::Time::now();
   _publm.publish(pcloud);
   _pubtj.publish(traj);
 
