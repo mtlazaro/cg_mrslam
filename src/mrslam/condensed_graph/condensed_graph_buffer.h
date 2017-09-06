@@ -35,7 +35,8 @@
 #include "g2o/types/slam2d/vertex_se2.h"
 #include "g2o/types/slam2d/edge_se2.h"
 
-#include "edge_labeler.h"
+#include "g2o/apps/g2o_hierarchical/edge_labeler.h"
+
 #include "condensed_graph_creator.h"
 
 using namespace g2o;

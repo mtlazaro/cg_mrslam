@@ -33,7 +33,8 @@
 #include "g2o/core/sparse_optimizer.h"
 #include "g2o/types/slam2d/edge_se2.h"
 
-#include "edge_labeler.h"
+#include "g2o/apps/g2o_hierarchical/edge_labeler.h"
+
 #include "../../slam/graph_manipulator.h"
 
 using namespace g2o;
