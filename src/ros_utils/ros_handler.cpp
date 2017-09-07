@@ -46,6 +46,14 @@ RosHandler::RosHandler (int idRobot, int nRobots, int typeExperiment){
 
   _useOdom = false;
   _useLaser = false;
+
+
+  std::string fullns = ros::this_node::getNamespace();
+  std::string delimiter = "_";
+  _rootns = fullns.substr(0, fullns.find(delimiter));
+
+  std::cerr << "NAMESPACE: " << fullns << std::endl;
+  std::cerr << "ROOT NAMESPACE: " << _rootns << std::endl;
 }
 
 void RosHandler::pingCallback(const cg_mrslam::Ping::ConstPtr& msg){
@@ -135,7 +143,7 @@ void RosHandler::init(){
     //Init ground-truth
     for (int r = 0; r < _nRobots; r++){
       std::stringstream nametopic;
-      nametopic << "/robot_" << r << "/base_pose_ground_truth";
+      nametopic << _rootns << "_" << r << "/base_pose_ground_truth";
       nav_msgs::Odometry::ConstPtr gtmsg = ros::topic::waitForMessage<nav_msgs::Odometry>(nametopic.str());
       _gtPoses[r] = SE2(-gtmsg->pose.pose.position.y, gtmsg->pose.pose.position.x, tf::getYaw(gtmsg->pose.pose.orientation)+M_PI_2);
     }
@@ -157,7 +165,7 @@ void RosHandler::run(){
     //subscribe ground truth
     for (int r = 0; r < _nRobots; r++){
       std::stringstream nametopic;
-      nametopic << "/robot_" << r << "/base_pose_ground_truth";
+      nametopic << _rootns << "_" << r << "/base_pose_ground_truth";
       _subgt[r] = _nh.subscribe<nav_msgs::Odometry>(nametopic.str(), 1, boost::bind(&RosHandler::groundTruthCallback, this, _1, &_gtPoses[r]));
     }
   } else if (_typeExperiment == REAL_EXPERIMENT){

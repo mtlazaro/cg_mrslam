@@ -105,6 +105,7 @@ class RosHandler
   
   int _idRobot;
   int _nRobots;
+  string _rootns;
   int _typeExperiment;
   bool _useOdom, _useLaser;
   string _baseFrameId;
