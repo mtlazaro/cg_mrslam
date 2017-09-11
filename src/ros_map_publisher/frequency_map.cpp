@@ -25,7 +25,7 @@ FrequencyMap::FrequencyMap(float resolution_,
 }
 
 void FrequencyMap::integrateScan(const g2o::RawLaser *laser, const g2o::SE2 &robotPose, 
-				 double maxRange, double usableRange, int gain, int squareSize) {
+				 float maxRange, float usableRange, float infinityFillingRange, int gain, int squareSize) {
   if(maxRange < 0) { maxRange = laser->laserParams().maxRange; }
   if(usableRange < 0) { usableRange = maxRange; }
 
@@ -35,12 +35,16 @@ void FrequencyMap::integrateScan(const g2o::RawLaser *laser, const g2o::SE2 &rob
   Eigen::Vector2i start = world2map(rp);
   for(size_t i = 0; i < laser->ranges().size(); i++) {
     float r = (float) laser->ranges()[i];
-    if(r >= maxRange) { continue; }
     bool cropped = false;
     if(r > usableRange) {
       r = usableRange;
       cropped = true;
     }
+    if(r >= maxRange || r == 0) { 
+      r = infinityFillingRange;
+      cropped = true;
+    }
+    
     static GridLineTraversalLine line;
     Eigen::Vector2d bp(r * cosf(laser->laserParams().firstBeamAngle + i * laser->laserParams().angularStep), 
   		       r * sinf(laser->laserParams().firstBeamAngle + i * laser->laserParams().angularStep));

@@ -35,7 +35,7 @@ class FrequencyMap : public Eigen::Matrix<FrequencyMapCell, Eigen::Dynamic, Eige
   virtual ~FrequencyMap() {}
 
   void integrateScan(const g2o::RawLaser* laser, const g2o::SE2 &robotPose, 
-		     double maxRange = -1.0f, double usableRange = -1.0f, int gain = 1, int squareSize = 1);
+		     float maxRange = -1.0f, float usableRange = -1.0f, float infinityFillingRange = -1.0f, int gain = 1, int squareSize = 1);
   void applyGain(int gain);
 
   inline Eigen::Vector2i world2map(const Eigen::Vector2f &wp) const { 

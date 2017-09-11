@@ -36,48 +36,49 @@ using namespace g2o;
 
 class Graph2occupancy {
 	
-public:
+ public:
 
-	Graph2occupancy(OptimizableGraph *graph, cv::Mat *image,SE2 pose, float resolution = 0.05, float threhsold = 0.0, float rows = 0, float cols = 0, float maxRange = -1.0, float usableRange = -1.0, float gain = -1.0, float squareSize = 1.0, float angle = 0.0, float freeThrehsold = 0.0);
+  Graph2occupancy(OptimizableGraph *graph, cv::Mat *image,SE2 pose, float resolution = 0.05, float threhsold = 0.0, float rows = 0, float cols = 0, float maxRange = -1.0, float usableRange = -1.0, float infinityFillingRange = -1.0, float gain = -1.0, float squareSize = 1.0, float angle = 0.0, float freeThrehsold = 0.0);
 
-	void computeMap ();
+  void computeMap ();
 
-	void setResolution (const float resolution);
+  void setResolution (const float resolution);
 
-	float getResolution ();
-	float getThreshold ();
-	float getRows ();
-	float getCols ();
-	float getFreeThreshold ();
+  float getResolution ();
+  float getThreshold ();
+  float getRows ();
+  float getCols ();
+  float getFreeThreshold ();
 
-	Vector2f getMapCenter();
-
-
+  Vector2f getMapCenter();
 
 
 
-protected:
-	OptimizableGraph *_graph;
-	FrequencyMap _map;
-	cv::Mat *_mapImage;
 
-	Vector2f _mapCenter;
 
-	float _resolution;
-	float _threshold;
-	float _rows;
-	float _cols;
-	float _maxRange;
-	float _usableRange;
-	float _gain;
-	float _squareSize;
-	float _angle;
-	float _freeThreshold;
+ protected:
+  OptimizableGraph *_graph;
+  FrequencyMap _map;
+  cv::Mat *_mapImage;
 
-	//Used for the occupancy map (published in RViz and provided via getMap)
-	unsigned char _freeColor = 0;
-	unsigned char _unknownColor = -1;
-	unsigned char _occupiedColor = 100;
+  Vector2f _mapCenter;
+
+  float _resolution;
+  float _threshold;
+  float _rows;
+  float _cols;
+  float _maxRange;
+  float _usableRange;
+  float _infinityFillingRange;
+  float _gain;
+  float _squareSize;
+  float _angle;
+  float _freeThreshold;
+
+  //Used for the occupancy map (published in RViz and provided via getMap)
+  unsigned char _freeColor = 0;
+  unsigned char _unknownColor = -1;
+  unsigned char _occupiedColor = 100;
 
 
 };

@@ -5,7 +5,7 @@ using namespace Eigen;
 using namespace g2o;
 
 
-Graph2occupancy::Graph2occupancy(OptimizableGraph *graph, cv::Mat *image, SE2 pose, float resolution, float threhsold, float rows, float cols, float maxRange, float usableRange, float gain, float squareSize, float angle, float freeThrehsold){
+Graph2occupancy::Graph2occupancy(OptimizableGraph *graph, cv::Mat *image, SE2 pose, float resolution, float threhsold, float rows, float cols, float maxRange, float usableRange, float infinityFillingRange, float gain, float squareSize, float angle, float freeThrehsold){
   
   _graph = graph;
   _mapImage = image;
@@ -17,6 +17,7 @@ Graph2occupancy::Graph2occupancy(OptimizableGraph *graph, cv::Mat *image, SE2 po
   _cols = cols;
   _maxRange = maxRange;
   _usableRange = usableRange;
+  _infinityFillingRange = infinityFillingRange;
   _gain = gain;
   _squareSize = squareSize;
   _angle = angle;
@@ -122,7 +123,7 @@ void Graph2occupancy::computeMap(){
   _map = FrequencyMap(_resolution, offset, size, unknownCell);
 
   for (size_t i = 0; i < robotPoses.size(); ++i) {
-    _map.integrateScan(robotLasers[i], robotPoses[i], _maxRange, _usableRange, _gain, _squareSize);
+    _map.integrateScan(robotLasers[i], robotPoses[i], _maxRange, _usableRange, _infinityFillingRange, _gain, _squareSize);
   }
 
   /************************************************************************

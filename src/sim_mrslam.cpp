@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   bool publishMap, publishGraph;
 
   float localizationAngularUpdate, localizationLinearUpdate;
-  float maxRange, usableRange;
+  float maxRange, usableRange, infinityFillingRange;
 
   arg.param("resolution",  resolution, 0.025, "resolution of the matching grid");
   arg.param("maxScore",    maxScore, 0.15,     "score of the matcher, the higher the less matches");
@@ -123,7 +123,8 @@ int main(int argc, char **argv)
 
   maxRange = rh.getLaserMaxRange();
   usableRange = maxRange;
-  
+  infinityFillingRange = 5.0;
+    
   for (int r = 0; r<nRobots; r++){
     std::cerr << "Ground Truth robot " << r << ": " << rh.getGroundTruth(r).translation().x() << " " << rh.getGroundTruth(r).translation().y() << " " << rh.getGroundTruth(r).rotation().angle() << std::endl;
   }
@@ -166,7 +167,7 @@ int main(int argc, char **argv)
   Eigen::Vector2f mapCenter;
   
   //Map building
-  Graph2occupancy mapCreator(gslam.graph(), &occupancyMap, currEst, mapResolution, occupiedThreshold, rows, cols, maxRange, usableRange, gain, squareSize, angle, freeThreshold);
+  Graph2occupancy mapCreator(gslam.graph(), &occupancyMap, currEst, mapResolution, occupiedThreshold, rows, cols, maxRange, usableRange, infinityFillingRange, gain, squareSize, angle, freeThreshold);
   OccupancyMapServer mapServer(&occupancyMap, idRobot, SIM_EXPERIMENT, mapFrame, mapTopic, occupiedThreshold, freeThreshold);
   GraphRosPublisher graphPublisher(gslam.graph(), mapFrame, odomFrame);
 
