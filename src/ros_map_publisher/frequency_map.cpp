@@ -67,6 +67,8 @@ void FrequencyMap::integrateScan(const g2o::RawLaser *laser, const g2o::SE2 &rob
       }
     }
   }
+
+  fillRobotPose(robotPose);
 }
 
 void FrequencyMap::applyGain(int gain) {
@@ -79,3 +81,20 @@ void FrequencyMap::applyGain(int gain) {
     }
   }
 }
+
+void FrequencyMap::fillRobotPose(const g2o::SE2 &robotPose){
+  Eigen::Vector2f rpose = Eigen::Vector2f((float) robotPose.translation().x(), (float) robotPose.translation().y());
+
+  Eigen::Vector2i rgrid = world2map(rpose);
+
+  int sizeRobot = 4; //pixels
+  for (int c = -sizeRobot; c <= sizeRobot; c++) {
+    for (int r = -sizeRobot; r <= sizeRobot; r++) {
+      Eigen::Vector2i cell(rgrid.x() + r, rgrid.y() +c);
+      if (isInside(cell)){
+	this->coeffRef(cell.x(), cell.y()).incrementMisses(1);
+      }
+    }
+  }
+}
+
