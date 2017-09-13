@@ -241,6 +241,28 @@ target_link_libraries(bag_mrslam
 )
 add_dependencies(bag_mrslam cg_mrslam_generate_messages_cpp)
 
+add_executable(cg_mrslam
+  src/cg_mrslam.cpp 
+)
+target_link_libraries(cg_mrslam
+  cg_mrslam_matcher_library
+  cg_mrslam_slam_library
+  cg_mrslam_ros_utils_library
+  cg_mrslam_condensed_graph_library
+  cg_mrslam_library
+  cg_mrslam_ros_map_publisher_library
+  ${catkin_LIBRARIES}  
+  ${CSPARSE_LIBRARY}
+  ${OpenCV_LIBS} 
+  ${G2O_TYPES_DATA}
+  ${G2O_SOLVER_CSPARSE_EXTENSION}
+  ${G2O_SOLVER_CSPARSE}
+  ${G2O_CORE_LIBRARY}
+  ${G2O_STUFF_LIBRARY}
+  ${G2O_TYPES_SLAM2D}
+)
+add_dependencies(cg_mrslam cg_mrslam_generate_messages_cpp)
+
 add_executable(comm_publisher
   src/comm_publisher.cpp 
 )

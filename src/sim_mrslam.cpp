@@ -168,7 +168,7 @@ int main(int argc, char **argv)
   
   //Map building
   Graph2occupancy mapCreator(gslam.graph(), &occupancyMap, currEst, mapResolution, occupiedThreshold, rows, cols, maxRange, usableRange, infinityFillingRange, gain, squareSize, angle, freeThreshold);
-  OccupancyMapServer mapServer(&occupancyMap, idRobot, SIM_EXPERIMENT, mapFrame, mapTopic, occupiedThreshold, freeThreshold);
+  OccupancyMapServer mapServer(&occupancyMap, idRobot, mapFrame, mapTopic, occupiedThreshold, freeThreshold);
   GraphRosPublisher graphPublisher(gslam.graph(), mapFrame, odomFrame);
 
   if (publishMap){
@@ -195,7 +195,7 @@ int main(int argc, char **argv)
 
   ////////////////////
   //Setting up network
-  GraphComm gc(&gslam, idRobot, nRobots, base_addr, SIM_EXPERIMENT);
+  GraphComm gc(&gslam, idRobot, nRobots, base_addr, SIM);
   gc.init_network(&rh);
 
   ros::Rate loop_rate(10);

@@ -54,7 +54,7 @@ class GraphComm
 {
  public:
 
-  GraphComm(MRGraphSLAM* gslam, int idRobot, int nRobots, std::string base_addr, int typeExperiment);
+  GraphComm(MRGraphSLAM* gslam, int idRobot, int nRobots, std::string base_addr, TypeExperiment typeExperiment);
   /*
   void init_network(SE2 gtPoses[]);
   void init_network(struct timeval pings[]);*/
@@ -76,7 +76,7 @@ class GraphComm
   int _iSock;
   int _idRobot;
   int _nRobots;
-  int _typeExperiment;
+  TypeExperiment _typeExperiment;
 
   std::string _base_addr;
 

@@ -31,39 +31,29 @@
 #include <string>
 #include <sstream> 
 
-#include "slam/graph_slam.h"
+#include "mrslam/mr_graph_slam.h"
+#include "mrslam/graph_comm.h"
 #include "ros_utils/ros_handler.h"
 #include "ros_utils/graph_ros_publisher.h"
 
 #include "ros_map_publisher/graph2occupancy.h"
 #include "ros_map_publisher/occupancy_map_server.h"
 
-
 using namespace g2o;
-
-#include <sys/time.h>
-//Log files
-int logData;
-ofstream timesfile, bytesfile;
-double timeval_diff(struct timeval *a, struct timeval *b)
-{
-  return
-    (double)(a->tv_sec + (double)a->tv_usec/1000000) -
-    (double)(b->tv_sec + (double)b->tv_usec/1000000);
-}
 
 int main(int argc, char **argv)
 {
 
   CommandArgs arg;
   double resolution;
-  double maxScore;
+  double maxScore, maxScoreMR;
   double kernelRadius;
-  int  minInliers;
-  int windowLoopClosure;
+  int  minInliers, minInliersMR;
+  int windowLoopClosure, windowMRLoopClosure;
   double inlierThreshold;
   int idRobot;
   int nRobots;
+  std::string base_addr;
   std::string outputFilename;
   std::string odometryTopic, scanTopic, mapTopic, odomFrame, mapFrame, baseFrame;
   std::vector<double> initialPose;
@@ -73,6 +63,9 @@ int main(int argc, char **argv)
   float localizationAngularUpdate, localizationLinearUpdate;
   float maxRange, usableRange, infinityFillingRange;
 
+  std::string modality;
+  TypeExperiment typeExperiment;
+  
   arg.param("resolution",  resolution, 0.025, "resolution of the matching grid");
   arg.param("maxScore",    maxScore, 0.15,     "score of the matcher, the higher the less matches");
   arg.param("kernelRadius", kernelRadius, 0.2,  "radius of the convolution kernel");
@@ -81,8 +74,12 @@ int main(int argc, char **argv)
   arg.param("inlierThreshold",  inlierThreshold, 2.,   "inlier threshold");
   arg.param("idRobot", idRobot, 0, "robot identifier" );
   arg.param("nRobots", nRobots, 1, "number of robots" );
+  arg.param("baseAddr", base_addr, "192.168.0.", "base IP address of the MR system" );
   arg.param("angularUpdate", localizationAngularUpdate, M_PI_4, "angular rotation interval for updating the graph, in radians");
   arg.param("linearUpdate", localizationLinearUpdate, 0.25, "linear translation interval for updating the graph, in meters");
+  arg.param("maxScoreMR",    maxScoreMR, 0.15,  "score of the intra-robot matcher, the higher the less matches");
+  arg.param("minInliersMR",    minInliersMR, 5,     "min inliers for the intra-robot loop closure");
+  arg.param("windowMRLoopClosure",  windowMRLoopClosure, 10,   "sliding window for the intra-robot loop closures");
   arg.param("odometryTopic", odometryTopic, "odom", "odometry ROS topic");
   arg.param("scanTopic", scanTopic, "scan", "scan ROS topic");
   arg.param("mapTopic", mapTopic, "map", "map ROS topic");
@@ -92,9 +89,23 @@ int main(int argc, char **argv)
   arg.param("initialPose", initialPose, std::vector<double>(), "Pose of the first vertex in the graph. Usage: -initial_pose 0,0,0");
   arg.param("publishMap", publishMap, false, "Publish map");
   arg.param("publishGraph", publishGraph, false, "Publish graph");
+  arg.param("modality", modality, "sim", "Choose mrslam modality from [sim, real, bag]. Consult Readme for differences between modalities.");
   arg.param("o", outputFilename, "", "file where to save output");
   arg.parseArgs(argc, argv);
-
+  
+  if (modality != "sim" && modality != "real" && modality != "bag"){
+    std::cerr << "Unknown modality: " << modality << std::endl;
+    exit(0);
+  } else {
+    std::cerr << "Starting cg_mrslam in modality: " << modality << std::endl;
+    if (modality == "sim")
+      typeExperiment = SIM;
+    else if (modality == "real")
+      typeExperiment = REAL;
+    else
+      typeExperiment = BAG;
+  }
+  
   //map parameters
   float mapResolution = 0.05;
   float occupiedThreshold = 0.65; 
@@ -106,15 +117,16 @@ int main(int argc, char **argv)
   float freeThreshold = 0.196;
 
 
-  ros::init(argc, argv, "srslam");
+  ros::init(argc, argv, "cg_mrslam");
 
-  RosHandler rh(idRobot, nRobots, REAL);
+  RosHandler rh(idRobot, nRobots, typeExperiment);
   rh.setOdomTopic(odometryTopic);
   rh.setScanTopic(scanTopic);
   rh.setBaseFrame(baseFrame);
   rh.useOdom(true);
   rh.useLaser(true);
-  rh.init();
+
+  rh.init();   //Wait for initial odometry and laserScan
   rh.run();
 
   maxRange = rh.getLaserMaxRange();
@@ -132,18 +144,22 @@ int main(int argc, char **argv)
       exit(0);
     }
   }else{
-    currEst = odomPosk_1;
+    if (typeExperiment == SIM)
+      currEst = rh.getGroundTruth(idRobot);
+    else
+      currEst = odomPosk_1;
   }
   
   std::cout << "My initial position is: " << currEst.translation().x() << " " << currEst.translation().y() << " " << currEst.rotation().angle() << std::endl;
   std::cout << "My initial odometry is: " << odomPosk_1.translation().x() << " " << odomPosk_1.translation().y() << " " << odomPosk_1.rotation().angle() << std::endl;
 
   //Graph building
-  GraphSLAM gslam;
+  MRGraphSLAM gslam;
   gslam.setIdRobot(idRobot);
   int baseId = 10000;
   gslam.setBaseId(baseId);
   gslam.init(resolution, kernelRadius, windowLoopClosure, maxScore, inlierThreshold, minInliers);
+  gslam.setInterRobotClosureParams(maxScoreMR, minInliersMR, windowMRLoopClosure);
 
   RobotLaser* rlaser = rh.getLaser();
 
@@ -151,12 +167,12 @@ int main(int argc, char **argv)
 
   cv::Mat occupancyMap;
   Eigen::Vector2f mapCenter;
-
+  
   //Map building
   Graph2occupancy mapCreator(gslam.graph(), &occupancyMap, currEst, mapResolution, occupiedThreshold, rows, cols, maxRange, usableRange, infinityFillingRange, gain, squareSize, angle, freeThreshold);
   OccupancyMapServer mapServer(&occupancyMap, idRobot, mapFrame, mapTopic, occupiedThreshold, freeThreshold);
   GraphRosPublisher graphPublisher(gslam.graph(), mapFrame, odomFrame);
-  
+
   if (publishMap){
     mapCreator.computeMap();
     
@@ -166,7 +182,7 @@ int main(int argc, char **argv)
     mapServer.publishMapMetaData();
     mapServer.publishMap();
   }
-
+  
   if (publishGraph)
     graphPublisher.publishGraph();
 
@@ -174,13 +190,16 @@ int main(int argc, char **argv)
     graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
 
   //Saving g2o file
-
   char buf[100];
   sprintf(buf, "robot-%i-%s", idRobot, outputFilename.c_str());
   ofstream ofmap(buf);
   gslam.graph()->saveVertex(ofmap, gslam.lastVertex());
 
- 
+  ////////////////////
+  //Setting up network
+  GraphComm gc(&gslam, idRobot, nRobots, base_addr, typeExperiment);
+  gc.init_network(&rh);
+
   ros::Rate loop_rate(10);
   while (ros::ok()){
     ros::spinOnce();
@@ -198,15 +217,9 @@ int main(int argc, char **argv)
 
       gslam.addDataSM(currEst, laseri);
       gslam.findConstraints();
-      
-      struct timeval t_ini, t_fin;
-      double secs;
-      gettimeofday(&t_ini, NULL);
-      gslam.optimize(5);
-      gettimeofday(&t_fin, NULL);
+      gslam.findInterRobotConstraints();
 
-      secs = timeval_diff(&t_fin, &t_ini);
-      printf("Optimization took %.16g milliseconds\n", secs * 1000.0);
+      gslam.optimize(5);
 
       currEst = gslam.lastVertex()->estimate();
       char buf[100];
@@ -232,20 +245,20 @@ int main(int argc, char **argv)
       if (publishMap || publishGraph)
 	graphPublisher.publishMapTransform(currEst, odomPosk_1);
     }
-    
+
     //Publish map
     if (publishMap){
       mapServer.publishMapMetaData();
       mapServer.publishMap();
     }
-
+    
     loop_rate.sleep();
   }
-  
+
   cerr << "Last Optimization...";
   gslam.optimize(5);
   gslam.saveGraph(buf);
   cerr << "Done" << endl;
-
+  
   return 0;
 }

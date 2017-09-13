@@ -26,11 +26,10 @@ bool OccupancyMapServer::mapCallback(nav_msgs::GetMap::Request  &req, nav_msgs::
 }
 
 
-OccupancyMapServer::OccupancyMapServer(cv::Mat* occupancyMap, int idRobot, int typeExperiment, string mapFrameName, string mapTopicName, float threshold, float freeThreshold){
+OccupancyMapServer::OccupancyMapServer(cv::Mat* occupancyMap, int idRobot, string mapFrameName, string mapTopicName, float threshold, float freeThreshold){
 
   _occupancyMap = occupancyMap;
 
-  _typeExperiment = typeExperiment;
   _idRobot = idRobot;
 
   _threshold = threshold;

@@ -28,8 +28,7 @@
 
 #include "graph_comm.h"
 
-GraphComm::GraphComm (MRGraphSLAM* gslam, int idRobot, int nRobots, std::string base_addr, int typeExperiment){
-  assert (typeExperiment >= 0 && typeExperiment <= 2 && "Not valid type of experiment");
+GraphComm::GraphComm (MRGraphSLAM* gslam, int idRobot, int nRobots, std::string base_addr, TypeExperiment typeExperiment){
   _typeExperiment = typeExperiment;
 
   _idRobot = idRobot;
@@ -71,13 +70,13 @@ bool GraphComm::inCommunicationRange(int r1, int r2){
 bool GraphComm::robotsInRange(std::vector<int>& robotsToSend){
   robotsToSend.clear();
 
-  if (_typeExperiment == REAL_EXPERIMENT){
+  if (_typeExperiment == REAL){
     //Send to all... the message will arrive if they are in range
     for (int r = 0; r < _nRobots; r++){
       if (r != _idRobot) //Except to me!
 	robotsToSend.push_back(r);
     }
-  }else if (_typeExperiment == SIM_EXPERIMENT){
+  }else if (_typeExperiment == SIM){
     //Send if inCommunicationRange
     for (int r = 0; r < _nRobots; r++){
       if (r != _idRobot){
@@ -86,7 +85,7 @@ bool GraphComm::robotsInRange(std::vector<int>& robotsToSend){
 	    robotsToSend.push_back(r);
       }
     }
-  }else if (_typeExperiment == BAG_EXPERIMENT){
+  }else if (_typeExperiment == BAG){
     //Send if recent ping
     ros::Time curr_time = ros::Time::now();
     for (int r = 0; r < _nRobots; r++){
@@ -117,7 +116,7 @@ void GraphComm::send(RobotMessage* cmsg, int rto){
   if (sizebufc){
     std::cerr << "Send info to robot: " << rto << ". Address: " << to_addr.str() << ". Sent: " << sizebufc  << " bytes" << std::endl;
     sendto(_iSock, &bufferc, sizebufc, 0, (struct sockaddr*) &toSockAddr, sizeof(toSockAddr));
-    if (_typeExperiment == REAL_EXPERIMENT)
+    if (_typeExperiment == REAL)
       _rh->publishSentMsg(cmsg);
   }
 }
@@ -179,7 +178,7 @@ void GraphComm::receiveFromThrd(){
     RobotMessage* msg = receive();
 
     fprintf(stderr, "Received info from: %i\n", msg->robotId());
-    if (_typeExperiment == REAL_EXPERIMENT){
+    if (_typeExperiment == REAL){
       _rh->publishReceivedMsg(msg);
       _rh->publishPing(msg->robotId());
     }

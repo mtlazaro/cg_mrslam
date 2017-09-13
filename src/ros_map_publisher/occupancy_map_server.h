@@ -20,19 +20,15 @@
 
 #include <opencv2/opencv.hpp>
 
-#define SIM_EXPERIMENT 0
-#define REAL_EXPERIMENT 1
-
 using namespace std;
 using namespace Eigen;
 using namespace g2o;
-
 
 class OccupancyMapServer{
 
 public:
 
-	OccupancyMapServer(cv::Mat* occupancyMap, int idRobot, int typeExperiment, string mapFrameName = "map", string mapTopicName = "map", float threshold = 0.0, float freeThreshold = 0.0);
+	OccupancyMapServer(cv::Mat* occupancyMap, int idRobot, string mapFrameName = "map", string mapTopicName = "map", float threshold = 0.0, float freeThreshold = 0.0);
 
 	void publishMap ();
 	void publishMapMetaData();
@@ -60,7 +56,6 @@ protected:
 	Vector2f _mapOffset;
 	float _mapResolution;
 
-	int _typeExperiment;
 	int _idRobot;
 
 	//Used for the occupancy map (published in RViz and provided via getMap)
