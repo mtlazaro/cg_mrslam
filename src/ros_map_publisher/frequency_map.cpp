@@ -40,9 +40,13 @@ void FrequencyMap::integrateScan(const g2o::RawLaser *laser, const g2o::SE2 &rob
       r = usableRange;
       cropped = true;
     }
-    if(r >= maxRange || r == 0) { 
-      r = infinityFillingRange;
-      cropped = true;
+    if(r >= maxRange || r <= 0) { 
+      if (infinityFillingRange > 0.0){
+	r = infinityFillingRange;
+	cropped = true;
+      }else {
+	continue;
+      }
     }
     
     static GridLineTraversalLine line;
