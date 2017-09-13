@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 
   ros::init(argc, argv, "bag_mrslam");
   
-  RosHandler rh(idRobot, nRobots, BAG_EXPERIMENT);
+  RosHandler rh(idRobot, nRobots, BAG);
   rh.setOdomTopic(odometryTopic);
   rh.setScanTopic(scanTopic);
   rh.setBaseFrame(baseFrame);

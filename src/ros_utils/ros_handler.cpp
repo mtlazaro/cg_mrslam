@@ -28,7 +28,7 @@
 
 #include "ros_handler.h"
 
-RosHandler::RosHandler (int idRobot, int nRobots, int typeExperiment){
+RosHandler::RosHandler (int idRobot, int nRobots, TypeExperiment typeExperiment){
 
   _idRobot = idRobot;
   _nRobots = nRobots;
@@ -139,7 +139,7 @@ void RosHandler::init(){
     std::cerr << "Robot-laser transform: (" << _trobotlaser.translation().x() << ", " << _trobotlaser.translation().y() << ", " << _trobotlaser.rotation().angle() << ")" << std::endl;
   }
 
-  if (_typeExperiment == SIM_EXPERIMENT){
+  if (_typeExperiment == SIM){
     //Init ground-truth
     for (int r = 0; r < _nRobots; r++){
       std::stringstream nametopic;
@@ -158,17 +158,17 @@ void RosHandler::run(){
   if (_useLaser) //Subscribe Laser
     _subScan = _nh.subscribe<sensor_msgs::LaserScan>(_scanTopic, 1,  &RosHandler::scanCallback, this);
 
-  if (_typeExperiment == BAG_EXPERIMENT){
+  if (_typeExperiment == BAG){
     //subscribe pings
     _subPing = _nh.subscribe<cg_mrslam::Ping>("ping_msgs", 1, &RosHandler::pingCallback, this);
-  } else if (_typeExperiment == SIM_EXPERIMENT){
+  } else if (_typeExperiment == SIM){
     //subscribe ground truth
     for (int r = 0; r < _nRobots; r++){
       std::stringstream nametopic;
       nametopic << _rootns << "_" << r << "/base_pose_ground_truth";
       _subgt[r] = _nh.subscribe<nav_msgs::Odometry>(nametopic.str(), 1, boost::bind(&RosHandler::groundTruthCallback, this, _1, &_gtPoses[r]));
     }
-  } else if (_typeExperiment == REAL_EXPERIMENT){
+  } else if (_typeExperiment == REAL){
     //publish ping, sent and received messages
     _pubRecv = _nh.advertise<cg_mrslam::SLAM>("recv_msgs", 1);
     _pubSent = _nh.advertise<cg_mrslam::SLAM>("sent_msgs", 1);

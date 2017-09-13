@@ -43,16 +43,14 @@
 
 #include "mrslam/msg_factory.h"
 
-#define SIM_EXPERIMENT 0
-#define REAL_EXPERIMENT 1
-#define BAG_EXPERIMENT 2
-
+enum TypeExperiment {SIM, REAL, BAG};
+  
 using namespace g2o;
 
 class RosHandler
 {
  public:
-  RosHandler(int idRobot, int nRobots, int typeExperiment);
+  RosHandler(int idRobot, int nRobots, TypeExperiment typeExperiment);
   
   inline void useOdom(bool useOdom){_useOdom = useOdom;}
   inline void useLaser(bool useLaser){_useLaser = useLaser;}
@@ -106,7 +104,7 @@ class RosHandler
   int _idRobot;
   int _nRobots;
   string _rootns;
-  int _typeExperiment;
+  TypeExperiment _typeExperiment;
   bool _useOdom, _useLaser;
   string _baseFrameId;
   SE2 _trobotlaser;

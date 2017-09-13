@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 
   ros::init(argc, argv, "sim_mrslam");
 
-  RosHandler rh(idRobot, nRobots, SIM_EXPERIMENT);
+  RosHandler rh(idRobot, nRobots, SIM);
   rh.setOdomTopic(odometryTopic);
   rh.setScanTopic(scanTopic);
   rh.setBaseFrame(baseFrame);

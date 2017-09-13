@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 
   ros::init(argc, argv, "srslam");
 
-  RosHandler rh(idRobot, nRobots, REAL_EXPERIMENT);
+  RosHandler rh(idRobot, nRobots, REAL);
   rh.setOdomTopic(odometryTopic);
   rh.setScanTopic(scanTopic);
   rh.setBaseFrame(baseFrame);
