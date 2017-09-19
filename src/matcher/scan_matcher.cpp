@@ -75,7 +75,7 @@ void ScanMatcher::resetGrid() {
 
 }
  
-void ScanMatcher::applyTransfToScan(SE2 transf, RawLaser::Point2DVector scan, RawLaser::Point2DVector& outScan){
+void ScanMatcher::applyTransfToScan(SE2 transf, const RawLaser::Point2DVector& scan, RawLaser::Point2DVector& outScan){
   outScan.resize(scan.size());
   for (unsigned int i = 0; i < scan.size(); i++){
     SE2 point;
@@ -127,9 +127,13 @@ bool ScanMatcher::closeScanMatching(OptimizableGraph::VertexSet& vset, Optimizab
     return false;
 
   RawLaser::Point2DVector cvscan = lasercv->cartesian();
+  Vector2dVector reducedCvscan;
+  CharGrid::subsample(reducedCvscan, cvscan, 0.1);
+  //cerr << "subsampling: " << cvscan.size() << " -> " << reducedCvscan.size() << endl;
+
   SE2 laserPoseCV = lasercv->laserParams().laserPose;
   RawLaser::Point2DVector cvScanRobot;
-  applyTransfToScan(laserPoseCV, cvscan, cvScanRobot);
+  applyTransfToScan(laserPoseCV, reducedCvscan, cvScanRobot);
 
   SE2 delta = originVertex->estimate().inverse() * currentVertex->estimate();
 
@@ -211,6 +215,7 @@ bool ScanMatcher::scanMatchingLC(OptimizableGraph::VertexSet& referenceVset,  Op
 
   Vector2dVector reducedScans;
   CharGrid::subsample(reducedScans, scansInCurVertex, 0.1);
+  //cerr << "subsampling: " << scansInCurVertex.size() << " -> " << reducedScans.size() << endl;
 
   RegionVector regions;
   RegionVector regionspi;
@@ -222,8 +227,8 @@ bool ScanMatcher::scanMatchingLC(OptimizableGraph::VertexSet& referenceVset,  Op
     if (vertex->id() != referenceVertex->id())
       relposv = referenceVertex->estimate().inverse() * vertex->estimate();
     
-    Eigen::Vector3f lower(-.5+relposv.translation().x(), -2.+relposv.translation().y(), -1.+relposv.rotation().angle());
-    Eigen::Vector3f upper( .5+relposv.translation().x(),  2.+relposv.translation().y(),  1.+relposv.rotation().angle());
+    Eigen::Vector3f lower(-.5+relposv.translation().x(), -1.5+relposv.translation().y(), -0.8+relposv.rotation().angle());
+    Eigen::Vector3f upper( .5+relposv.translation().x(),  1.5+relposv.translation().y(),  0.8+relposv.rotation().angle());
     reg.lowerLeft  = lower;
     reg.upperRight = upper;
     regions.push_back(reg);
