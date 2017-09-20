@@ -48,7 +48,7 @@ Instructions
 There are two main programs: ```srslam```, for running a single-robot experiment and ```cg_mrslam```, for running a multi-robot experiment. ```cg_mrslam``` admits three modalities of execution (using the parameter `-modality`) for different kind of experiments:
 
 - **real:**
-  For running a multi-robot online real experiment. Robots must belong to the same network and their IP addresses configured from 192.168.0.(1.. *nRobots*).  
+  For running a multi-robot online real experiment. Robots must belong to the same network and their IP addresses configured from 192.168.0.(1.. *nRobots*) (base IP address is configurable with ```-baseAddr``` program option). 
   By default it reads /scan and /odom ROS topic although they are configurable.
   Each time a robot receives a message from the network, it publishes a message in /ping_msgs to be able to reproduce robot connectivity offline.
 
