@@ -32,9 +32,18 @@ GraphRosPublisher::GraphRosPublisher(OptimizableGraph* graph, string mapFrame, s
   _graph = graph;
   _mapFrame = mapFrame;
   _odomFrame = odomFrame;
+}
 
+void GraphRosPublisher::start(){
   _pubtj = _nh.advertise<geometry_msgs::PoseArray>("trajectory", 1);
   _publm = _nh.advertise<sensor_msgs::PointCloud>("lasermap", 1);
+
+
+  _publishTfThread = std::thread(&GraphRosPublisher::publishTransformThread, this);
+}
+
+void GraphRosPublisher::stop(){
+  _publishTfThread.join();
 }
 
 void GraphRosPublisher::publishGraph(){
@@ -83,23 +92,25 @@ void GraphRosPublisher::publishGraph(){
 
 }
 
+void GraphRosPublisher::publishTransformThread(){
 
-void GraphRosPublisher::publishMapTransform(SE2 lastVertexEstimate, SE2 lastOdom){
-
-  assert(_graph && "Cannot publish: undefined graph");
-
-  SE2 delta_map_odom = lastVertexEstimate*lastOdom.inverse();
-  tf::Transform tmp_tf(tf::createQuaternionFromYaw(delta_map_odom.rotation().angle()),
-		       tf::Vector3(delta_map_odom.translation().x(),
-				   delta_map_odom.translation().y(),
-				   0.0));
+  ros::Rate loop_rate(10);
+  while (ros::ok()){
+    SE2 delta_map_odom = _lastEstimate*_lastOdom.inverse();
+    tf::Transform tmp_tf(tf::createQuaternionFromYaw(delta_map_odom.rotation().angle()),
+			 tf::Vector3(delta_map_odom.translation().x(),
+				     delta_map_odom.translation().y(),
+				     0.0));
+    
+    tf::StampedTransform map_to_odom(tmp_tf,
+				     ros::Time::now(),
+				     _mapFrame, _odomFrame);
+    
+    _broadcaster.sendTransform(map_to_odom);
+    
+    loop_rate.sleep();
+  }
   
-  tf::StampedTransform map_to_odom(tmp_tf,
-				   ros::Time::now(),
-				   _mapFrame, _odomFrame);
-
-  _broadcaster.sendTransform(map_to_odom);
-
-
+  std::cerr << "Publish Transform thread finished." << std::endl;
 
 }

@@ -45,23 +45,20 @@ Installation
 
 Instructions
 ------------
-There are four main programs for different kind of experiments.  
+There are two main programs: ```srslam```, for running a single-robot experiment and ```cg_mrslam```, for running a multi-robot experiment. ```cg_mrslam``` admits three modalities of execution (using the parameter `-modality`) for different kind of experiments:
 
-- **real_mrslam:**
+- **real:**
   For running a multi-robot online real experiment. Robots must belong to the same network and their IP addresses configured from 192.168.0.(1.. *nRobots*).  
   By default it reads /scan and /odom ROS topic although they are configurable.
   Each time a robot receives a message from the network, it publishes a message in /ping_msgs to be able to reproduce robot connectivity offline.
 
-- **bag_mrslam:**
+- **bag:**
   For reproducing bagfiles generated from a multi-robot real experiment. Reads the /ping_msgs topic to reproduce communication among robots.
 
-- **sim_mrslam:**
-  For running multi-robot simulation experiments with the Stage simulator. Connectivity among robots is based on their relative distances using the ground-truth positions.
+- **sim:**
+  For running multi-robot simulation experiments with the Stage simulator. Connectivity among robots is based on their relative distances using the ground-truth positions provided by the simulator.
 
-- **srslam:**
-  For running a single-robot experiment.
-
-All programs must be run adding the robot namespace "robot_x", where x is the robot identifier (0.. *nRobots* -1).
+The multi-robot experiment must be run using the robot namespace "robot_x", where x is the robot identifier (0.. *nRobots* -1). You can use other namespaces (e.g. myrobot_0) but the convention for robot identifiers must be maintained.
 The default parameters work well in general, anyway for specific program options type:
 
     $ rosrun cg_mrslam mainProgram --help
@@ -75,14 +72,14 @@ Open one terminal and type from the bagfiles directory (make sure you launched `
 
 In two different terminals type:
 
-    $ rosrun cg_mrslam sim_mrslam -idRobot 0 -nRobots 2 -scanTopic base_scan -o testmrslam.g2o __ns:=robot_0
-    $ rosrun cg_mrslam sim_mrslam -idRobot 1 -nRobots 2 -scanTopic base_scan -o testmrslam.g2o __ns:=robot_1 
+    $ rosrun cg_mrslam cg_mrslam -idRobot 0 -nRobots 2 -scanTopic base_scan -modality sim -o testmrslam.g2o __ns:=robot_0
+    $ rosrun cg_mrslam cg_mrslam -idRobot 1 -nRobots 2 -scanTopic base_scan -modality sim -o testmrslam.g2o __ns:=robot_1 
 
 During the execution it will create one g2o file for each robot, named robot-x-testmrslam.g2o which can be openned with the **g2o_viewer**.  
 
 Two possible visualizations can be done online using RViz. The raw graph created by the SLAM approach can be published by using the program option ```-publishGraph``` which will be drawn with respect the map frame which can be defined through the command line if it is different from the default one (/map). Additionally, it is possible to visualize the occupancy grid map published like other standard ROS mappers using the program option ```-publishMap```. For the current example, to visualize the graph and map of robot_0:
 
-    $ rosrun cg_mrslam sim_mrslam -idRobot 0 -nRobots 2 -scanTopic base_scan -mapFrame /robot_0/map -odomFrame /robot_0/odom -publishMap -publishGraph -o testmrslam.g2o __ns:=robot_0
+    $ rosrun cg_mrslam cg_mrslam -idRobot 0 -nRobots 2 -scanTopic base_scan -mapFrame /robot_0/map -odomFrame /robot_0/odom -modality sim -publishMap -publishGraph -o testmrslam.g2o __ns:=robot_0
 
 Then, launch RViz (`rosrun rviz rviz`) and select /robot_0/map as the Fixed Frame in Global options. The nodes of the graph are published as a PoseArray message on the /robot_0/trajectory topic while their associated laserscans are published as a PointCloud on the /robot_0/lasermap topic. See the following screenshots as example of visualization:
 

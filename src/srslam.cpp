@@ -170,9 +170,12 @@ int main(int argc, char **argv)
   if (publishGraph)
     graphPublisher.publishGraph();
 
-  if (publishMap || publishGraph)
-    graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
-
+  if (publishMap || publishGraph){
+    graphPublisher.start();
+    graphPublisher.setEstimate(gslam.lastVertex()->estimate());
+    graphPublisher.setOdom(odomPosk_1);
+  }
+  
   //Saving g2o file
 
   char buf[100];
@@ -213,9 +216,11 @@ int main(int argc, char **argv)
       sprintf(buf, "robot-%i-%s", idRobot, outputFilename.c_str());
       gslam.saveGraph(buf);
 
-      if (publishMap || publishGraph)
-	graphPublisher.publishMapTransform(gslam.lastVertex()->estimate(), odomPosk_1);
-
+      if (publishMap || publishGraph){
+	graphPublisher.setEstimate(gslam.lastVertex()->estimate());
+	graphPublisher.setOdom(odomPosk_1);
+      }
+      
       //Publish graph to visualize it on Rviz
       if (publishGraph)
 	graphPublisher.publishGraph();
@@ -229,8 +234,10 @@ int main(int argc, char **argv)
 
     }else {
       //Publish map transform with last corrected estimate + odometry drift
-      if (publishMap || publishGraph)
-	graphPublisher.publishMapTransform(currEst, odomPosk_1);
+      if (publishMap || publishGraph){
+	graphPublisher.setEstimate(currEst);
+	graphPublisher.setOdom(odomPosk_1);
+      }
     }
     
     //Publish map
@@ -247,5 +254,8 @@ int main(int argc, char **argv)
   gslam.saveGraph(buf);
   cerr << "Done" << endl;
 
+  if (publishMap || publishGraph)
+    graphPublisher.stop();
+  
   return 0;
 }

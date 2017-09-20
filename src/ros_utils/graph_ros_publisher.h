@@ -45,6 +45,7 @@
 #include "slam/graph_slam.h"
 
 #include <string>
+#include <thread>
 
 using namespace g2o;
 using namespace std;
@@ -54,9 +55,13 @@ class GraphRosPublisher
  public:
   GraphRosPublisher(OptimizableGraph* graph, string mapFrame, string odomFrame);
 
+  void start();
+  void stop();
   void publishGraph();
-  void publishMapTransform(SE2 lastVertexEstimate, SE2 lastOdom);
 
+  inline void setEstimate(const SE2 estimate){_lastEstimate = estimate;};
+  inline void setOdom(const SE2 odom){_lastOdom = odom;};
+  
  protected:
   ros::NodeHandle _nh;
 
@@ -64,8 +69,14 @@ class GraphRosPublisher
   ros::Publisher _publm;
   tf::TransformBroadcaster _broadcaster;
 
+  std::thread _publishTfThread;
+  
   OptimizableGraph* _graph;
   string _mapFrame, _odomFrame;
+
+  SE2 _lastEstimate, _lastOdom;
+
+  void publishTransformThread();
 };
 
 #endif
