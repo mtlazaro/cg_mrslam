@@ -39,9 +39,9 @@ OccupancyMapServer::OccupancyMapServer(cv::Mat* occupancyMap, int idRobot, strin
   _mapTopicName = mapTopicName;
 	
 
-  _pubOccupGrid = _nh.advertise<nav_msgs::OccupancyGrid>(_mapTopicName,1);
+  _pubOccupGrid = _nh.advertise<nav_msgs::OccupancyGrid>(_mapTopicName, 1, true);
 
-  _pubMapMetaData = _nh.advertise<nav_msgs::MapMetaData>(_mapTopicName + "_metadata", 1);
+  _pubMapMetaData = _nh.advertise<nav_msgs::MapMetaData>(_mapTopicName + "_metadata", 1, true);
 
   _server = _nh.advertiseService(_mapTopicName, &OccupancyMapServer::mapCallback, this);
 

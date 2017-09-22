@@ -243,20 +243,16 @@ int main(int argc, char **argv)
         mapCreator.computeMap();
         mapCenter = mapCreator.getMapCenter();
         mapServer.setOffset(mapCenter);
+        mapServer.publishMapMetaData();
+	mapServer.publishMap();
       }
-
+      
     }else {
       //Publish map transform with last corrected estimate + odometry drift
       if (publishMap || publishGraph){
 	graphPublisher.setEstimate(currEst);
 	graphPublisher.setOdom(odomPosk_1);
       }
-    }
-
-    //Publish map
-    if (publishMap){
-      mapServer.publishMapMetaData();
-      mapServer.publishMap();
     }
     
     loop_rate.sleep();
