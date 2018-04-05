@@ -182,16 +182,16 @@ int main(int argc, char **argv)
     mapServer.publishMapMetaData();
     mapServer.publishMap();
   }
-  
-  if (publishGraph)
-    graphPublisher.publishGraph();
 
   if (publishMap || publishGraph){
     graphPublisher.start();
     graphPublisher.setEstimate(gslam.lastVertex()->estimate());
     graphPublisher.setOdom(odomPosk_1);
   }
-
+  
+  if (publishGraph)
+    graphPublisher.publishGraph();
+  
   //Saving g2o file
   char buf[100];
   sprintf(buf, "robot-%i-%s", idRobot, outputFilename.c_str());
