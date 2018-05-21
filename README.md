@@ -16,6 +16,14 @@ Requirements:
   
         $ git clone https://github.com/RainerKuemmerle/g2o.git
 
+  - Compile **g2o**:
+
+            mkdir build && cd build
+            cmake ..
+            make
+            cd ../g2o
+            ln -s ../build/g2o/config.h .
+  
   - Set up the following **g2o** environment variables in your ~/.bashrc:  
 
             #set up G2O
