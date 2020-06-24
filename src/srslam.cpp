@@ -69,7 +69,8 @@ int main(int argc, char **argv)
   std::vector<double> initialPose;
   initialPose.clear();
   bool publishMap, publishGraph;
-
+  bool invertedLaser;
+  
   float localizationAngularUpdate, localizationLinearUpdate;
   float maxRange, usableRange, infinityFillingRange;
 
@@ -92,6 +93,7 @@ int main(int argc, char **argv)
   arg.param("initialPose", initialPose, std::vector<double>(), "Pose of the first vertex in the graph. Usage: -initial_pose 0,0,0");
   arg.param("publishMap", publishMap, false, "Publish map");
   arg.param("publishGraph", publishGraph, false, "Publish graph");
+  arg.param("invertedLaser", invertedLaser, false, "Laser is upside down");
   arg.param("o", outputFilename, "", "file where to save output");
   arg.parseArgs(argc, argv);
 
@@ -114,6 +116,7 @@ int main(int argc, char **argv)
   rh.setBaseFrame(baseFrame);
   rh.useOdom(true);
   rh.useLaser(true);
+  rh.invertedLaser(invertedLaser);
   rh.init();
   rh.run();
 

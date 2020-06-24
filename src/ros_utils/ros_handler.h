@@ -55,6 +55,8 @@ class RosHandler
   inline void useOdom(bool useOdom){_useOdom = useOdom;}
   inline void useLaser(bool useLaser){_useLaser = useLaser;}
 
+  inline void invertedLaser(bool invertedLaser){_invertedLaser = invertedLaser;}
+
   SE2 getOdom();
   RobotLaser* getLaser();
   inline float getLaserMaxRange() {return _laserMaxRange;}
@@ -106,6 +108,7 @@ class RosHandler
   string _rootns;
   TypeExperiment _typeExperiment;
   bool _useOdom, _useLaser;
+  bool _invertedLaser;
   string _baseFrameId;
   SE2 _trobotlaser;
 

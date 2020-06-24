@@ -47,6 +47,7 @@ RosHandler::RosHandler (int idRobot, int nRobots, TypeExperiment typeExperiment)
   _useOdom = false;
   _useLaser = false;
 
+  _invertedLaser = false;
 
   std::string fullns = ros::this_node::getNamespace();
   std::string delimiter = "_";
@@ -98,6 +99,8 @@ RobotLaser* RosHandler::getLaser(){
   for (size_t i =0; i < _laserscan.ranges.size(); i++){
     ranges[i] = _laserscan.ranges[i];
   }
+  if (_invertedLaser)
+    std::reverse(ranges.begin(), ranges.end());
   rlaser->setRanges(ranges);
   rlaser->setTimestamp(_laserscan.header.stamp.sec + _laserscan.header.stamp.nsec * pow(10, -9));
   rlaser->setLoggerTimestamp(rlaser->timestamp());
