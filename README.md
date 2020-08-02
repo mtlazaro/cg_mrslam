@@ -12,9 +12,12 @@ It is possible to use it also for single-robot SLAM.
 
 Requirements:
 -------------
-- This code uses the **g2o** framework for graph optimization  
+- This code uses the **g2o** framework for graph optimization. *I recommend to checkout this specific **g2o** commit. I consider this a stable version, since after this commit, changes were made in the managing of Eigen and the set of some compilation flags that were giving problems in my setup*.
   
         $ git clone https://github.com/RainerKuemmerle/g2o.git
+        $ cd g2o
+        $ git checkout 4b9c2f5b68d14ad479457b18c5a2a0bce1541a90
+  
 
   - Compile **g2o**:
 
